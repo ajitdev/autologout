@@ -27,7 +27,7 @@ if(!defined("AUTOLOGOUT_DEBUG")) {
 class autologout_default_settings {
   var $enabled = FALSE;       // Initially disabled
   var $timeout = 3600;        // default 1 hour
-  var $refresh_delta = 30;    // force browser refresh (timeout+refresh_delta)
+  var $refresh_delta = 0;     // force browser refresh (timeout+refresh_delta)
   var $use_watchdog = 1;      // log auto-logouts to watchdog
   var $block_title = 'Automatic logout in';
 }
