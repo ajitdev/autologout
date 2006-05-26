@@ -26,7 +26,7 @@ if (!function_exists('autologout_install')) {
         $query1 = db_query("CREATE TABLE {autologout} (".
                            "uid INT NOT NULL,".
                            "setting SMALLINT NOT NULL default 0,".
-                           "PRIMARY KEY (uid)");
+                           "PRIMARY KEY (uid))");
         if($query1) {
           $created = TRUE;
         }
