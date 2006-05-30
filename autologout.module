@@ -184,7 +184,7 @@ function autologout_user($op, &$edit, &$account, $category = NULL) {
       }
       break;
     case 'form':
-      if(_autologout_user_in_by_user_role($account)) {
+      if(_autologout_user_in_by_user_role($account) && 'account' == $category) {
         $form = array();
         $form[$category]['autologout'] = array(
           '#type' => 'checkbox',
