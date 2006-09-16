@@ -12,7 +12,7 @@
  */
 
 if(!defined("AUTOLOGOUT_DEBUG")) {
-  define("AUTOLOGOUT_DEBUG", 0); // 0 - disabled, 1 - enabled
+  define("AUTOLOGOUT_DEBUG", 1); // 0 - disabled, 1 - enabled
 }
 
 /* {{{ default settings class definition (place holder definition) */
@@ -29,7 +29,7 @@ class autologout_default_settings {
   var $timeout = 3600;        // default 1 hour
   var $refresh_delta = 0;     // force browser refresh (timeout+refresh_delta)
   var $use_watchdog = 1;      // log auto-logouts to watchdog
-  var $block_title = 'Automatic logout in';
+  var $block_title = 'automatic logout in';
 }
 /* }}} */
 
@@ -53,6 +53,21 @@ function autologout_help($section = '') {
   }
 
   return $output;
+}
+/* }}} */
+
+/* {{{ autologout_info() */
+/**
+ * Implementation of hook_info()
+ */
+function autologout_info() {
+  return array(
+    'autologout' => array(
+      'name' => t('automated logout'),
+      'module' => 'autologout',
+      'description' => t('Manage the automated logout features')
+    )
+  );
 }
 /* }}} */
 
@@ -89,17 +104,22 @@ function autologout_access($op, $node) {
 function autologout_block($op = 'list', $delta = 0, $edit = array()) {
   global $user;
 
-  _autologout_debug("autologout_block()");
+  _autologout_debug("autologout_block('$op')");
+
+ if (!_autologout_local_settings('enabled')) {
+    return;
+  }
 
   switch($op) {
     case 'list':
-      $block[0]['info'] = t('Automated logout info');
+      $block[0]['info'] = t('automated logout info');
       break;
     case 'configure':
     case 'save':
       break;
     case 'view':
       if ($user->uid < 2 || _autologout_by_role()) {
+        _autologout_debug("  block doesn't apply");
         return;
       }
       drupal_set_html_head(variable_get('autologout_js', ''));
@@ -143,10 +163,10 @@ function autologout_footer() {
     else {
       // timeout occured, end session
       if (_autologout_local_settings('use_watchdog')) {
-        watchdog('user', 'Automatic logout activated', WATCHDOG_NOTICE);
+        watchdog('user', 'automatic logout activated', WATCHDOG_NOTICE);
       }
       unset($_SESSION['lastaccess']);
-      sess_destroy(session_id());
+      sess_destroy($user->uid);
       session_id(md5(session_id()));
       drupal_goto();
       return;
@@ -173,6 +193,9 @@ function autologout_user($op, &$edit, &$account, $category = NULL) {
   }
 
   switch ($op) {
+    case 'login':
+      $_SESSION['lastaccess'] = time();
+      break;
     case 'load':
       if(_autologout_user_in_by_user_role($account)) {
         $account->autologout = 0;
@@ -240,11 +263,33 @@ function autologout_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 }
 /* }}} */
 
+/* {{{ autologout_menu() */
+/**
+ * Implementation of hook_menu
+ */
+function autologout_menu($may_cache) {
+  if($may_cache) {
+    $items[] = array( 
+      'path' => 'admin/settings/autologout',
+      'title' => t('automatic logout'),
+      'description' => t('manage the automated logout feature'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => '_autologout_settings',
+      'access' => user_access('administer site configuration'),
+      'type' => MENU_NORMAL_ITEM
+    );
+
+    return $items;
+  }
+
+}
+/* }}} */
+
 /* {{{ autologout_settings() */
 /**
  * Implementation of hook_settings
  */
-function autologout_settings() {
+function _autologout_settings() {
 
   _autologout_debug("autologout_settings()");
 
@@ -256,7 +301,7 @@ function autologout_settings() {
   $form = array();
   $form['autologout'] = array(
     '#type'  => 'fieldset',
-    '#title' => t('Auto logout settings'),
+    '#title' => t('auto logout settings'),
     '#tree'  => TRUE
   );
   $form['autologout']['markup1'] = array(
@@ -333,7 +378,7 @@ function autologout_settings() {
    '#value' => $markup3
   );
 
-  return $form;
+  return system_settings_form($form);
 }
 /* }}} */
 
