@@ -12,7 +12,7 @@
  */
 
 if(!defined("AUTOLOGOUT_DEBUG")) {
-  define("AUTOLOGOUT_DEBUG", 1); // 0 - disabled, 1 - enabled
+  define("AUTOLOGOUT_DEBUG", 0); // 0 - disabled, 1 - enabled
 }
 
 /* {{{ default settings class definition (place holder definition) */
