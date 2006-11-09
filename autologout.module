@@ -156,7 +156,7 @@ function autologout_footer() {
       $_SESSION['lastaccess'] = time();
       if ($refresh = (int)_autologout_local_settings('refresh_delta')) {
         $force_refresh = $timeout + $refresh;  
-        drupal_set_html_head("\n  <meta http-equiv=\"refresh\" content=\"$force_refresh\">");
+        drupal_set_html_head("\n  <meta http-equiv=\"refresh\" content=\"$force_refresh\" />");
         return;
       }
     }
