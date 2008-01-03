@@ -368,7 +368,7 @@ function _autologout_settings() {
     t('Exculde : all users in this role are excluded from auto-logout functionality'),
     t('By user : all users in this role can select to switch off this functionality')
   );
-  $markup3 = theme_item_list($markup3_items, t('Policy description')) . 
+  $markup3 = theme('item_list', $markup3_items, t('Policy description')) . 
              t('Please note, if a user is found to be in a role '. 
                'that allows disabling this feature, this overrides '.
                'any enforcement');
