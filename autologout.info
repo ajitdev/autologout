@@ -1,3 +1,4 @@
 ; $Id$
-name = autologout
+name = Automated Logout
 description = Adds automated timed logout
+core = 6.x

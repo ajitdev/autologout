@@ -13,8 +13,8 @@ Timeout value in seconds.
   The is the "inactivity" timeout value. It's important to note
   that the server's only way of knowing about activity is when
   a browser requests a page from it. If the user is happily sitting
-  there, say typing an enormous blog entry, then there's no way for
-  server to know the actual user is very busy until she submits the
+  there, say typing an enormous blog entry, then there's no way for the
+  server to know the actual user is very busy until he/she submits the
   page. The server checks for any submissions (input) by the user.
   If there is content being added, the timeout is effectivly
   cancelled and a new session starts.
@@ -53,7 +53,8 @@ precidence over any Enforce that might have been in place.
 
 Finally, this module provides a block that displays the h,m,s left in this
 session (hours minutes seconds). It can be enabled in Admin > blocks and
-the title of the block can be set in the standard settings page.
+the title of the block can be set in the standard settings page. This block 
+is only displayed if you have the countdowntimer module installed.
 
 If a policy settings means a user is not subject to autologout (in a role
 of Exclude or By user and user set in profile not to autologout) then the
