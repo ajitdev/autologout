@@ -644,7 +644,7 @@ function _autologout_invalidate_other_sessions($account) {
   $result = db_result(db_query($sql, $account->uid, session_id()));
   //drupal_set_message('session counts = '. $result);
   if ($result != 0) {
-    drupal_set_message(t('You are only allowed 1 session at a time. You had %number_of_rows other active session that was terminated.', array('%number_of_rows' => $result, )), 'error');
+    drupal_set_message(t('You are only allowed 1 session at a time. You had %number_of_rows other active sessions that were terminated.', array('%number_of_rows' => $result, )), 'error');
     $sql = "UPDATE {sessions} SET uid='0' WHERE uid = '%s' AND sid <> '%s'";
     db_query($sql, $account->uid, session_id());
     watchdog('Automated Logout', t('One Session automatically logged out user.'), array(), WATCHDOG_WARNING);
