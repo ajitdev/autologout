@@ -150,7 +150,7 @@ function autologout_block($op = 'list', $delta = 0, $edit = array()) {
           <span style="display:none" class="dir">down</span>
           <span style="display:none" class="format_txt">%hours%:%mins%:%secs%</span>
           <span style="display:none" class="threshold">5</span>
-          <span style="display:none" class="complete">'. t('You have been logged out.') .' '. ($refresh ? ' '. t('This page will refresh in %refresh seconds.', array('%refresh' => $refresh)) : '') .'</span>
+          <span style="display:none" class="complete">'. t('You have been automatically logged out due to inactivity.') .' '. ($refresh ? ' '. t('This page will refresh in %refresh seconds.', array('%refresh' => $refresh)) : '') .'</span>
       ';
       $redirect_url = _autologout_local_settings('redirect_url');
       $logout_message = _autologout_local_settings('logout_message');
