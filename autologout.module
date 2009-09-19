@@ -200,7 +200,6 @@ function autologout_help($path, $arg) {
  */
 function autologout_boot() {
   include_once('includes/common.inc');
-  drupal_init_language();
   global $user;
   if ($user->uid < 2 || _autologout_by_role()) {
     _autologout_debug("  block doesn't apply");
@@ -267,9 +266,6 @@ function autologout_user_login(&$edit, $account) {
   if (empty($account->uid) || $account->uid == 1) {
     return; // UID 0 or UID 1 not appliciable
   }
-  if (!$category) {
-    $category = "account";
-  }
   // one session checking
   $return = _autologout_check_one_session();
   //drupal_set_message('return = '. $return);
@@ -277,8 +273,7 @@ function autologout_user_login(&$edit, $account) {
     //drupal_set_message('checking for other sessions');
     _autologout_invalidate_other_sessions($account);
   }
-  $_SESSION['lastaccess'] = time();
-  break;
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 }
 
 /**
@@ -292,17 +287,8 @@ function autologout_user_load($users) {
       {autologout}
   ";
   $result = db_query($sql);
-  
-  // this following part needs to be fixed to work with D7
-  // it hasn't been thought out in the least bit
-  if (_autologout_user_in_by_user_role($account)) {
-    $account->autologout = 0;
-    $r = db_query("SELECT setting FROM {autologout} WHERE uid = %d", $account->uid);
-    $rcount = db_result(db_query("SELECT count(setting) FROM {autologout} WHERE uid = %d", $account->uid));
-    if ($rcount > 0) {
-      $row = db_fetch_object($r);
-      $account->autologout = (int)$row->setting;
-    }
+  foreach ($users AS $uid => $user) {
+    $users[$uid]->autologout = _autologout_user_logout_setting($uid);
   }
 }
 
@@ -347,7 +333,7 @@ function autologout_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     case "validate":
     case "prepare":
     case "delete":
-      $_SESSION['lastaccess'] = time();
+      $_SESSION['lastaccess'] = REQUEST_TIME;
       break;
   }
 }
@@ -359,9 +345,9 @@ function autologout_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
  */
 function autologout_menu() {
 
-  $items['admin/settings/autologout'] = array(
-    'title' => t('Automated logout'),
-    'description' => t('Manage the Automated Logout features'),
+  $items['admin/config/people/autologout'] = array(
+    'title' => 'Automated logout',
+    'description' => 'Manage the Automated Logout features',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('_autologout_settings'),
     'access arguments' => array('administer autologout'),
@@ -531,26 +517,22 @@ function _autologout_by_role($passed_user = FALSE) {
   // value "autologout" in the global $user object ??
 
   if (FALSE == $passed_user) {
-    $local_user = user_load(array('uid' => $user->uid));
+    $local_user = $user;
   }
   else {
     $local_user = $passed_user;
   }
-
-  foreach (user_roles(TRUE) as $role) {
-    switch (_autologout_local_settings($role)) {
+  $settings = _autologout_local_settings();
+  foreach ($local_user->roles AS $role) {
+    switch ($settings[$role]) {
       case 0: // Enforce for all in this role
         break;
       case 1: // Exclude all users in this role
-        if (in_array($role, $local_user->roles)) {
-          return TRUE;
-        }
+        return TRUE;
         break;
       case 2: // Exclude user if user set to disable
-        if (in_array($role, $local_user->roles)) {
-          if (isset($local_user->autologout) && $local_user->autologout != 0) {
-            return TRUE;
-          }
+        if (_autologout_user_logout_setting($local_user->uid)) {
+          return TRUE;
         }
         break;
     }
@@ -559,6 +541,37 @@ function _autologout_by_role($passed_user = FALSE) {
   return FALSE;
 }
 /* }}} */
+
+/**
+ * determine what the user setting is for logging out
+ *
+ * @param   $uid
+ *    The user's uid
+ * @return  bool
+ *    if the user chose to bypass being logged out or not
+ */
+function _autologout_user_logout_setting($uid) {
+  static $user_settings = array();
+  if (empty($user_settings)) {
+    $sql = "
+      SELECT
+        *
+      FROM
+        {autologout}
+    ";
+    $result = db_query($sql);
+    while ($row = db_fetch_object($result)) {
+      $user_settings[$row->uid] = $row->setting;
+    }
+  }
+  if (isset($user_settings[$uid])) {
+    return $user_settings[$uid];
+  }
+  else {
+    return FALSE;
+  }
+}
+
 
 /* {{{ _autologout_user_in_by_user_role() */
 function _autologout_user_in_by_user_role($passed_user = FALSE) {
