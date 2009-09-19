@@ -1,4 +1,5 @@
 ; $Id$
 name = Automated Logout
 description = Adds automated timed logout
-core = 6.x
+core = 7.x
+files[] = autologout.module
