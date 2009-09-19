@@ -187,47 +187,47 @@ function autologout_help($path, $arg) {
 /* }}} */
 
 
-/* {{{ autologout_init() */
+/* {{{ autologout_boot() */
 /**
- * Implementation of hook_init().
+ * Implementation of hook_boot().
  */
-function autologout_init() {
-    global $user;
-    if ($user->uid < 2 || _autologout_by_role()) {
-        _autologout_debug("  block doesn't apply");
-        return;
+function autologout_boot() {
+  include_once('includes/common.inc');
+  drupal_init_language();
+  global $user;
+  if ($user->uid < 2 || _autologout_by_role()) {
+    _autologout_debug("  block doesn't apply");
+    return;
+  }
+  $timeout = (int)_autologout_local_settings('timeout');
+  if (_autologout_local_settings('enabled')) {
+    if (!isset($_SESSION['lastaccess']) || ((int)$_SESSION['lastaccess'] + $timeout) > time()) {
+      /**
+       * If we don't have a time to compare with, or the timeout
+       * has not yet occurred we set a time.
+       */
+      $_SESSION['lastaccess'] = time();
+      if ($refresh = (int)_autologout_local_settings('refresh_delta') && !module_exists("countdowntimer")) {
+        $force_refresh = $timeout + $refresh;
+        $this_header = "<meta http-equiv=\"refresh\" content=\"{$force_refresh}\" />";
+        $this_head = drupal_set_html_head($this_header);
+      }
     }
-    $timeout = (int)_autologout_local_settings('timeout');
-    if (_autologout_local_settings('enabled')) {
-        if (!isset($_SESSION['lastaccess']) || ((int)$_SESSION['lastaccess'] + $timeout) > time()) {
-            /**
-             * If we don't have a time to compare with, or the timeout
-             * has not yet occurred we set a time.
-             */
-            $_SESSION['lastaccess'] = time();
-
-            if ($refresh = (int)_autologout_local_settings('refresh_delta') && !module_exists("countdowntimer")) {
-                $force_refresh = $timeout + $refresh;
-                $this_header = "<meta http-equiv=\"refresh\" content=\"{$force_refresh}\" />";
-                $this_head = drupal_set_html_head($this_header);
-            }
-        }
-        else {
-            /**
-             * timeout occured, end session
-             */
-            if (_autologout_local_settings('use_watchdog')) {
-                watchdog('user', 'Automated Logout activated', array(), WATCHDOG_NOTICE);
-            }
-            unset($_SESSION['lastaccess']);
-            module_load_include('pages.inc', 'user');
-            user_logout();
-            return;
-        }
+    else {
+      /**
+       * timeout occured, end session
+       */
+      if (_autologout_local_settings('use_watchdog')) {
+        watchdog('user', 'Automated Logout activated', array(), WATCHDOG_NOTICE);
+      }
+      unset($_SESSION['lastaccess']);
+      module_load_include('pages.inc', 'user');
+      user_logout();
+      return;
     }
+  }
 }
 /* }}} */
-
 
 
 /* {{{ autologout_user() */
