@@ -122,7 +122,7 @@ function autologout_block_view($delta = '') {
           }
         }
       }
-      $block['subject'] = _autologout_local_settings('block_title');
+      $block['subject'] = filter_xss_admin(_autologout_local_settings('block_title'));
       $refresh = (int)_autologout_local_settings('refresh_delta');
       $timeout = _autologout_local_settings('timeout');
       $logout_time = (int)$_SESSION['lastaccess'] + $timeout;
@@ -140,8 +140,8 @@ function autologout_block_view($delta = '') {
         <span style="display:none" class="threshold">5</span>
         <span style="display:none" class="complete">' . t('You have been automatically logged out due to inactivity.') . ' ' . ($refresh ? ' ' . t('This page will refresh in %refresh seconds.', array('%refresh' => $refresh)) : '') . '</span>
       ';
-      $redirect_url = _autologout_local_settings('redirect_url');
-      $logout_message = _autologout_local_settings('logout_message');
+      $redirect_url = filter_xss_admin(_autologout_local_settings('redirect_url'));
+      $logout_message = filter_xss_admin(_autologout_local_settings('logout_message'));
 
       if ( $redirect_url != '' ) {
         $block['content'] .= '<span style="display:none" class="tc_redir">' . $redirect_url . '</span>';
