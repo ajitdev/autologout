@@ -466,7 +466,7 @@ function _autologout_settings() {
     '#type'  => 'fieldset',
     '#title' => t('One Session settings'),
     '#tree'  => TRUE,
-    '#description' => 'One session will provide enforcement for "one session" per user. If a user logs in when another session for that user is active the other session will be deactivated. The user will be notified and the event logged.',
+    '#description' => t('One session will provide enforcement for "one session" per user. If a user logs in when another session for that user is active the other session will be deactivated. The user will be notified and the event logged.'),
   );
   $values = variable_get('autologout_one_session', 0);
   //drupal_set_message('values = <pre>'. print_r($values, true).'</pre>');
