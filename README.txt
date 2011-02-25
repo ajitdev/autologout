@@ -1,6 +1,5 @@
 README.txt file
 ===============
-$Id$
 
 Settings
 ========

@@ -1,6 +1,5 @@
 INSTALL.txt file
 ================
-$Id$
 
 1. Place the autologout folder in your drupal/modules folder (or if multisite and this 
   module is meant to be available to just one site in drupal/sites/www.YOURSITE.com/modules)
