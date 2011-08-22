@@ -11,9 +11,6 @@
  * Implementation of hook_install().
  */
 function autologout_install() {
-  // Create tables.
-  drupal_install_schema('autologout');
-  
   // sink module's weight to the deepest depths of the module_list()
   db_query("UPDATE {system} SET weight = %d WHERE name = '%s'", 1000, 'autologout');
 }
@@ -23,9 +20,6 @@ function autologout_install() {
  * Implementation of hook_uninstall().
  */
 function autologout_uninstall() {
-  // Remove table.
-  drupal_uninstall_schema('autologout');
-
   variable_del('autologout');
   variable_del('autologout_one_session');
 }
