@@ -74,11 +74,11 @@ function autologout_access($op, $node) {
  * Implements hook_block_info().
  */
 function autologout_block_info() {
-  
+
   $blocks = array();
 
   _autologout_debug("autologout_block_info()");
-  
+
   $blocks['info'] = array(
     'info' => t('Automated Logout info'),
     );
@@ -92,13 +92,13 @@ function autologout_block_view($delta = '') {
   global $user;
 
   $block = array();
-  
+
   _autologout_debug("autologout_block_view()");
-  
+
   if (!_autologout_local_settings('enabled')) {
     return;
   }
-  
+
   if ($user->uid < 1 || _autologout_by_role()) {
     _autologout_debug("  block doesn't apply");
     return;
@@ -107,7 +107,7 @@ function autologout_block_view($delta = '') {
   $refresh = (int)_autologout_local_settings('refresh_delta');
   $timeout = _autologout_local_settings('timeout');
   $redirect_url = filter_xss_admin(_autologout_local_settings('redirect_url'));
-  
+
   if (module_exists('jstimer') && module_exists('jst_timer')) {
     $block['content'] = theme('jstimer', array(
       'widget_name' => 'jst_timer',
@@ -125,12 +125,12 @@ function autologout_block_view($delta = '') {
   else {
     $block['content'] = t('You will be logged out in !time if this page is not refreshed before then.', array('!time' => format_interval($timeout)));
   }
-  
+
   $logout_message = filter_xss_admin(_autologout_local_settings('logout_message'));
   if ( $logout_message != '' ) {
     $block['content'] .='<span style="display:none" class="tc_msg">'. $logout_message .'</span>';
   }
-  
+
   $block['content'] .='</span>';
   return $block;
 }
@@ -146,12 +146,12 @@ function autologout_block_configure($delta = '') {
   if (!_autologout_local_settings('enabled')) {
     return;
   }
-  
+
   if (module_exists('jstimer')) {
     if (!module_exists('jst_timer')) {
       drupal_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
     }
-    
+
     if (variable_get('jstimer_js_load_option', 0) != 1) {
       drupal_set_message(t('The Javascript timer module\'s "Javascript load options" setting should be set to "Every page" for the dynamic countdown to work in the automated logout block.'), 'error');
     }
@@ -183,7 +183,7 @@ function autologout_boot() {
   if($user->uid < 1) {
     return;
   }
-  
+
   if ( !isset($_SESSION['autologout_hits']) ) {
     $_SESSION['autologout_hits'] = array();
   }
@@ -460,19 +460,19 @@ function autologout_menu() {
 
   $items['admin/config/people/autologout'] = array(
     'title' => t('Automated logout'),
-    'description' => t('Manage the Automated Logout features'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('autologout_admin_settings'),
-    'access arguments' => array('administer autologout'),
-    'file' => 'autologout.admin.inc',
-    'type' => MENU_NORMAL_ITEM
+    'description'       => t('Manage the Automated Logout features'),
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('autologout_admin_settings'),
+    'access arguments'  => array('administer autologout'),
+    'file'              => 'autologout.admin.inc',
+    'type'              => MENU_NORMAL_ITEM
   );
 
   $items['autologout/logout'] = array(
-    'title' => t('Automated logout'),
-    'page callback' => 'autologout_logout',
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK
+    'title'             => t('Automated logout'),
+    'page callback'     => 'autologout_logout',
+    'access callback'   => TRUE,
+    'type'              => MENU_CALLBACK
   );
 
   return $items;
