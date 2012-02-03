@@ -12,7 +12,10 @@
  */
 function autologout_install() {
   // sink module's weight to the deepest depths of the module_list()
-  db_query("UPDATE {system} SET weight = %d WHERE name = '%s'", 1000, 'autologout');
+  db_query("UPDATE {system} SET weight = :weight WHERE name = :name", array(
+    ':weight' => 1000,
+    ':name' => 'autologout',
+  ));
 }
 
 
