@@ -594,45 +594,6 @@ function _autologout_local_settings($name = FALSE) {
 /* }}} */
 
 
-/* {{{ autologout_theme() */
-/**
- * Implementation of hook_theme().
- */
-function autologout_theme($existing, $type, $theme, $path) {
-
-  $themes = array(
-    'autologout_generic' => array(
-      'variables' => array('arg' => 0)
-    )
-  );
-
-  return $themes;
-}
-/* }}} */
-
-
-/**
- * theme_autologout_generic()
- *
- * A general theme function used when HTML is being inserted into
- * a text string. Allows themers the oppertunity to alter html the
- * module may want to output to suit their site/theme.
- *
- * @param integer $arg
- *  A constant defining what string to return.
- * @return string
- *   The actual string.
- */
-function theme_autologout_generic($variables) {
-
-  switch ($variables['arg']) {
-    case 0:
-      return '<br/><b>'. t('Set-up your site policy by role:-') .'</b>';
-    default:
-      return '';
-  }
-}
-
 /* {{{ _autologout_debug() */
 function _autologout_debug($s) {
   if (defined("AUTOLOGOUT_DEBUG") && AUTOLOGOUT_DEBUG) {

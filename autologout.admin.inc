@@ -40,7 +40,7 @@ function autologout_admin_settings() {
   );
   $form['autologout']['markup1'] = array(
     '#type'  => 'markup',
-    '#value' => theme('autologout_generic', 1),
+    '#value' => t('Set-up your site policy by role:-'),
   );
   $form['autologout']['enabled'] = array(
     '#type' => 'checkbox',
