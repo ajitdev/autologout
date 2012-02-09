@@ -7,8 +7,9 @@
  * with a schema for the tables
  * and an uninstall function to remove the database tables
  */
+
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function autologout_install() {
   // sink module's weight to the deepest depths of the module_list()
@@ -20,7 +21,7 @@ function autologout_install() {
 
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function autologout_uninstall() {
   variable_del('autologout');
@@ -29,7 +30,7 @@ function autologout_uninstall() {
 
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function autologout_schema() {
   $schema['autologout'] = array(

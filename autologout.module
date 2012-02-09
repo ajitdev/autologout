@@ -1,5 +1,4 @@
 <?php
-// $Id: autologout.module,v 1.8.2.32 2010/05/20 14:33:08 jvandervort Exp $
 
 /**
  * @file
@@ -17,11 +16,10 @@
  * are automatically logged out after a preset time.
  */
 
-if(!defined("AUTOLOGOUT_DEBUG")) {
+if (!defined("AUTOLOGOUT_DEBUG")) {
   define("AUTOLOGOUT_DEBUG", 0); // 0 - disabled, 1 - enabled
 }
 
-/* {{{ default settings class definition (place holder definition) */
 /**
  * Note, these defaults are for the "out of the box" settings. Most
  * of these can be set by the site admin and once the site admin does
@@ -37,11 +35,9 @@ class autologout_default_settings {
   var $use_watchdog = 1;      // log auto-logouts to watchdog
   var $block_title = 'automatic logout in';
 }
-/* }}} */
 
-/* {{{ autologout_permission() */
 /**
- * Implementation of hook_permission().
+ * Implements hook_permission().
  */
 function autologout_permission() {
 
@@ -54,21 +50,6 @@ function autologout_permission() {
   );
 
 }
-/* }}} */
-
-/* {{{ autologout_access() */
-/**
- * Implementation of hook_access().
- */
-/*
-function autologout_access($op, $node) {
-  global $user;
-
-  _autologout_debug("autologout_access('$op', ".$node->nid.")");
-  return TRUE;
-}
- */
-/* }}} */
 
 /**
  * Implements hook_block_info().
@@ -116,7 +97,7 @@ function autologout_block_view($delta = '') {
         'tc_redir' => $redirect_url,
         'threshold' => 5,
         'format_txt' => filter_xss_admin(variable_get('autologout_jstimer_format', '%hours%:%mins%:%secs%')),
-        'complete' => t('You have been automatically logged out due to inactivity.') .' '. ($refresh ? ' '. t('This page will refresh in %refresh seconds.', array('%refresh' => $refresh)) : ''),
+        'complete' => t('You have been automatically logged out due to inactivity.') . ' ' . ($refresh ? ' ' . t('This page will refresh in %refresh seconds.', array('%refresh' => $refresh)) : ''),
         'no_js_txt' => t('You will be logged out in !time if this page is not refreshed before then.', array('!time' => format_interval($timeout))),
         )
       )
@@ -128,7 +109,7 @@ function autologout_block_view($delta = '') {
 
   $logout_message = filter_xss_admin(_autologout_local_settings('logout_message'));
   if ( $logout_message != '' ) {
-    $block['content'] .='<span style="display:none" class="tc_msg">'. $logout_message .'</span>';
+    $block['content'] .='<span style="display:none" class="tc_msg">' . $logout_message . '</span>';
   }
 
   $block['content'] .='</span>';
@@ -160,39 +141,36 @@ function autologout_block_configure($delta = '') {
   return $block;
 }
 
-/* {{{ autologout_help() */
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function autologout_help($path, $arg) {
   switch ($path) {
     case 'admin/help#autologout':
-      $output = '<p>'. t('The <em>Automated Logout</em> module allows you to force users to log out after a given amount of time. You can configure this in the <a href="@alo_settings">Automated logout settings</a> page.', array('@alo_settings' => url('admin/config/people/autologout'))) . '</p>';
-      $output .= '<p>'. t('If you have the <a href="@jstimer">Javascript timer module</a> enabled, the <a href="@automatedlogoutblock">Automated Logout block</a> will have a live countdown timer.', array('@automatedlogoutblock' => url('admin/structure/block'), '@jstimer' => 'http://drupal.org/project/jstimer')) . '</p>';
+      $output = '<p>' . t('The <em>Automated Logout</em> module allows you to force users to log out after a given amount of time. You can configure this in the <a href="@alo_settings">Automated logout settings</a> page.', array('@alo_settings' => url('admin/config/people/autologout'))) . '</p>';
+      $output .= '<p>' . t('If you have the <a href="@jstimer">Javascript timer module</a> enabled, the <a href="@automatedlogoutblock">Automated Logout block</a> will have a live countdown timer.', array('@automatedlogoutblock' => url('admin/structure/block'), '@jstimer' => 'http://drupal.org/project/jstimer')) . '</p>';
       return $output;
   }
 }
-/* }}} */
 
 /**
- * Implementation of hook_boot().
+ * Implements hook_boot().
  * NOTE: Do as little as possible here. A lot of modules are not loaded at this point.
  */
 function autologout_boot() {
   global $user;
-  if($user->uid < 1) {
+  if ($user->uid < 1) {
     return;
   }
 
   if ( !isset($_SESSION['autologout_hits']) ) {
     $_SESSION['autologout_hits'] = array();
   }
-  $_SESSION['autologout_hits'][] = time();
+  $_SESSION['autologout_hits'][] = REQUEST_TIME;
 }
 
-/* {{{ autologout_init() */
 /**
- * Implementation of hook_init().
+ * Implements hook_init().
  */
 function autologout_init() {
   global $user;
@@ -203,17 +181,17 @@ function autologout_init() {
 
   if (_autologout_local_settings('enabled')) {
     $timeout = (int)_autologout_local_settings('timeout');
-    $nowtime = time();
+    $nowtime = REQUEST_TIME;
     if (!isset($_SESSION['lastaccess'])) {
        $_SESSION['lastaccess'] = $nowtime;
     }
 
-    // update lastaccess from any cache hits which wouldn't have been processes by hook_init()
-    if ( isset($_SESSION['autologout_hits']) ) {
-      foreach($_SESSION['autologout_hits'] as $hit) {
-        if ( (int)$hit - (int)$_SESSION['lastaccess'] > 0 ) {
+    // update lastaccess from any cache hits which wouldn't have been processed by hook_init()
+    if (isset($_SESSION['autologout_hits'])) {
+      foreach ($_SESSION['autologout_hits'] as $hit) {
+        if ((int)$hit - (int)$_SESSION['lastaccess'] > 0) {
           // if hit wouldn't have timedout, update lastaccess
-          if ( ((int)$hit - (int)$_SESSION['lastaccess']) < $timeout ) {
+          if (((int)$hit - (int)$_SESSION['lastaccess']) < $timeout) {
             // rebase lastaccess
             $_SESSION['lastaccess'] = $hit;
           }
@@ -222,7 +200,7 @@ function autologout_init() {
     }
 
     // now normal processing because the cache hits have been accounted for.
-    if ( ($nowtime - (int)$_SESSION['lastaccess']) < $timeout ) {
+    if (($nowtime - (int)$_SESSION['lastaccess']) < $timeout) {
       // the timeout has not yet occurred.
 
       $_SESSION['lastaccess'] = $nowtime;
@@ -236,7 +214,7 @@ function autologout_init() {
           '#type' => 'markup',
           '#markup' => $this_header,
         );
-        $this_head = drupal_add_html_head($element,'refresh-header');
+        $this_head = drupal_add_html_head($element, 'refresh-header');
       }
     }
     else {
@@ -266,12 +244,9 @@ function autologout_init() {
     }
   }
 }
-/* }}} */
 
-
-/* {{{ autologout_user_login() */
 /**
- * Implementation of hook_user_login().
+ * Implements hook_user_login().
  */
 function autologout_user_login(&$edit, $account) {
 
@@ -286,13 +261,10 @@ function autologout_user_login(&$edit, $account) {
   if ($return) {
     _autologout_invalidate_other_sessions($account);
   }
-  $_SESSION['lastaccess'] = time();
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 
 }
-/* }}} */
 
-
-/* {{{ autologout_user_load() */
 /**
  * Implements hook_user_load().
  */
@@ -314,10 +286,7 @@ function autologout_user_load($users) {
     $users[$row->uid]->autologout = (int)$row->setting;
   }
 }
-/* }}} */
 
-
-/* {{{ autologout_form_user_profile_alter() */
 /**
  * Implements hook_form_FORM_ID_alter().
  */
@@ -347,12 +316,9 @@ function autologout_form_user_profile_form_alter(&$form, &$form_state) {
   }
 
 }
-/* }}} */
 
-
-/* {{{ autologout_user_update() */
 /**
- * Implementation of hook_user_update().
+ * Implements hook_user_update().
  */
 function autologout_user_update(&$edit, $account, $category) {
 
@@ -371,12 +337,9 @@ function autologout_user_update(&$edit, $account, $category) {
   }
 
 }
-/* }}} */
 
-
-/* {{{ autologout_user_delete() */
 /**
- * Implementation of hook_user_delete().
+ * Implements hook_user_delete().
  */
 function autologout_user_delete($account) {
 
@@ -389,7 +352,6 @@ function autologout_user_delete($account) {
   db_delete('autologout')->condition('uid', $account->uid)->execute();
 
 }
-/* }}} */
 
 
 // if a user is entering data then don't log them out or
@@ -397,70 +359,54 @@ function autologout_user_delete($account) {
 // frustrating than entering alot of info only for a
 // website to throw it away!
 
-/* {{{ autologout_node_update() */
 /**
- * Implementation of hook_node_update().
+ * Implements hook_node_update().
  */
 function autologout_node_update($node) {
   _autologout_debug("autologout_node_update()");
-  $_SESSION['lastaccess'] = time();
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 }
-/* }}} */
 
-
-/* {{{ autologout_node_insert() */
 /**
- * Implementation of hook_node_insert().
+ * Implements hook_node_insert().
  */
 function autologout_node_insert($node) {
   _autologout_debug("autologout_node_insert()");
-  $_SESSION['lastaccess'] = time();
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 }
-/* }}} */
 
-
-/* {{{ autologout_node_delete() */
 /**
- * Implementation of hook_node_delete().
+ * Implements hook_node_delete().
  */
 function autologout_node_delete($node) {
   _autologout_debug("autologout_node_delete()");
-  $_SESSION['lastaccess'] = time();
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 }
-/* }}} */
 
-
-/* {{{ autologout_node_validate() */
 /**
- * Implementation of hook_node_validate().
+ * Implements hook_node_validate().
  */
 function autologout_node_validate($node) {
   _autologout_debug("autologout_node_validate()");
-  $_SESSION['lastaccess'] = time();
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 }
-/* }}} */
 
-
-/* {{{ autologout_node_prepare() */
 /**
- * Implementation of hook_node_prepare().
+ * Implements hook_node_prepare().
  */
 function autologout_node_prepare($node) {
   _autologout_debug("autologout_node_prepare()");
-  $_SESSION['lastaccess'] = time();
+  $_SESSION['lastaccess'] = REQUEST_TIME;
 }
-/* }}} */
 
-
-/* {{{ autologout_menu() */
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function autologout_menu() {
 
   $items['admin/config/people/autologout'] = array(
-    'title' => t('Automated logout'),
-    'description'       => t('Manage the Automated Logout features'),
+    'title'             => 'Automated logout',
+    'description'       => 'Manage the Automated Logout features',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('autologout_admin_settings'),
     'access arguments'  => array('administer autologout'),
@@ -469,7 +415,7 @@ function autologout_menu() {
   );
 
   $items['autologout/logout'] = array(
-    'title'             => t('Automated logout'),
+    'title'             => 'Automated logout',
     'page callback'     => 'autologout_logout',
     'access callback'   => TRUE,
     'type'              => MENU_CALLBACK
@@ -477,15 +423,11 @@ function autologout_menu() {
 
   return $items;
 }
-/* }}} */
-
-
 
 /* ========================= */
 /*  Helper functions follow  */
 /* ========================= */
 
-/* {{{ _autologout_by_role() */
 /**
  * _autologout_by_role()
  *
@@ -527,9 +469,7 @@ function _autologout_by_role($passed_user = NULL) {
 
   return FALSE;
 }
-/* }}} */
 
-/* {{{ _autologout_user_in_by_user_role() */
 function _autologout_user_in_by_user_role($passed_user = NULL) {
   global $user;
   if ($passed_user === NULL) {
@@ -553,9 +493,7 @@ function _autologout_user_in_by_user_role($passed_user = NULL) {
 
   return FALSE;
 }
-/* }}} */
 
-/* {{{ _autologout_local_settings() */
 /**
  * _autologout_local_settings($name = FALSE)
  *
@@ -591,16 +529,12 @@ function _autologout_local_settings($name = FALSE) {
     return $settings; // return the entire array
   }
 }
-/* }}} */
 
-
-/* {{{ _autologout_debug() */
 function _autologout_debug($s) {
   if (defined("AUTOLOGOUT_DEBUG") && AUTOLOGOUT_DEBUG) {
     error_log($s);
   }
 }
-/* }}} */
 
 function _autologout_check_one_session() {
   global $user;
@@ -611,6 +545,7 @@ function _autologout_check_one_session() {
   }
   return $return;
 }
+
 function _autologout_invalidate_other_sessions($account) {
 
   // Do nothing if anonymous.
@@ -631,25 +566,24 @@ function _autologout_invalidate_other_sessions($account) {
 
   if ($result != 0) {
     // Send the message to the current session
-    $current_session_msg = t('You are only allowed 1 open session at a time. Your other session has been terminated.');
-    drupal_set_message($current_session_msg, 'error');
+    drupal_set_message(t('You are only allowed 1 open session at a time. Your other session has been terminated.'), 'error');
 
     // Logout OTHER sessions, and send them their message
     $other_session_msg =  t('You have been automatically logged out.  You are only allowed 1 open session at a time, and another open session was detected.');
-    $other_session_msg = 'messages|'. serialize(array('error' =>  array($other_session_msg)));
+    $other_session_msg = 'messages|' . serialize(array('error' =>  array($other_session_msg)));
     db_update('sessions')
-      ->fields(array('uid' => '0','session' => $other_session_msg))
+      ->fields(array('uid' => '0', 'session' => $other_session_msg))
       ->condition('uid', $account->uid, '=')
       ->condition('sid', session_id(), '<>')
       ->execute();
 
     // Write a watchdog message for the site admin.
-    watchdog('Automated Logout', t('One Session automatically logged out user.'), array(), WATCHDOG_WARNING);
+    watchdog('Automated Logout', 'One Session automatically logged out user.', array(), WATCHDOG_WARNING);
   }
 }
 
 function autologout_logout() {
     $xtra = filter_xss_admin(_autologout_local_settings('logout_message'));
-    drupal_set_message(t('You have been automatically logged out due to inactivity.') ."\n<br/>\n". $xtra);
+    drupal_set_message(t('You have been automatically logged out due to inactivity.') . "\n<br/>\n" . $xtra);
     drupal_goto();
 }
