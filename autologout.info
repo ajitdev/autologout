@@ -1,5 +1,6 @@
 name = Automated Logout
 description = Adds automated timed logout
+package = Administration
 core = 7.x
 files[] = autologout.module
 configure = admin/config/people/autologout
