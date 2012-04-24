@@ -175,7 +175,7 @@ function autologout_boot() {
 function autologout_init() {
   global $user;
   if ($user->uid < 1 || _autologout_by_role()) {
-    _autologout_debug("  block doesn't apply");
+    _autologout_debug("block doesn't apply");
     return;
   }
 
@@ -223,14 +223,10 @@ function autologout_init() {
       // code from core(user.pages.inc), can't use it directly because we need need a custom goto
       watchdog('user', 'Session closed for %name.', array('%name' => $user->name));
 
-      // Destroy the current session:
-      session_destroy();
-      // Only variables can be passed by reference workaround.
-      $null = NULL;
-      user_module_invoke('logout', $null, $user);
+      module_invoke_all('user_logout', $user);
 
-      // Load the anonymous user
-      $user = drupal_anonymous_user();
+      // Destroy the current session, and reset $user to the anonymous user.
+      session_destroy();
 
       $redirect_url = filter_xss_admin(_autologout_local_settings('redirect_url'));
       if ( $redirect_url != '' ) {
