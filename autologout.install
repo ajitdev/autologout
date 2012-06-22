@@ -1,45 +1,24 @@
 <?php
+// $Id:
+
 /**
  * @file
- * Install file for Automated Logout Module
+ * Install file for JS Logout Module
  *
- * This file provides an install function (create database tables)
- * with a schema for the tables
- * and an uninstall function to remove the database tables
  */
-
-/**
- * Implements hook_install().
- */
-function autologout_install() {
-  // sink module's weight to the deepest depths of the module_list()
-  db_query("UPDATE {system} SET weight = :weight WHERE name = :name", array(
-    ':weight' => 1000,
-    ':name' => 'autologout',
-  ));
-}
-
 
 /**
  * Implements hook_uninstall().
  */
 function autologout_uninstall() {
-  variable_del('autologout');
-  variable_del('autologout_one_session');
-}
-
-
-/**
- * Implements hook_schema().
- */
-function autologout_schema() {
-  $schema['autologout'] = array(
-    'fields' => array(
-      'uid'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      'setting'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0, 'size' => 'small')
-    ),
-    'primary key' => array('uid'),
-  );
-
-  return $schema;
+  variable_del('autologout_timeout');
+  variable_del('autologout_use_watchdog');
+  variable_del('autologout_redirect_url');
+  variable_del('autologout_message');
+  variable_del('autologout_padding');
+  variable_del('autologout_enforce_admin');
+  
+  foreach (user_roles(TRUE) as $key => $role) {
+    variable_del('autologout_role_' . $key);
+  }  
 }

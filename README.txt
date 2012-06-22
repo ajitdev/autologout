@@ -1,65 +1,20 @@
-README.txt file
-===============
-$Id: README.txt,v 1.2 2009/04/17 14:05:51 jvandervort Exp $
+/* $Id:
 
-Settings
+Description
+===========
+After a given timeout has passed, users are given a configurable session expired prompt. They can reset the timeout, logout, or ignore it in which case they'll be logged out after a the padding time has elapsed. This is all backed up by a server side logout if js is disable or bypassed.
+
+Features
 ========
-
-Enable module checkbox. 
-  If this is unchecked the module is NOT activated and no 
-  automated logouts will occur.
-
-Timeout value in seconds.
-  The is the "inactivity" timeout value. It's important to note
-  that the server's only way of knowing about activity is when
-  a browser requests a page from it. If the user is happily sitting
-  there, say typing an enormous blog entry, then there's no way for the
-  server to know the actual user is very busy until he/she submits the
-  page. The server checks for any submissions (input) by the user.
-  If there is content being added, the timeout is effectivly
-  cancelled and a new session starts.
-
-Browser refresh delta:
-  If this is set to a non zero value, this time will be added to the
-  "Timeout value in seconds" variable and be used to set a :-
-    <meta http-equiv="refresh" content="xxx">
-  line in the <head> section of the page. It's likely that clocks
-  won't be perfect so make the browser wait sometime longer than the
-  actual time out value. This effectively sends the browser back to
-  the homepage with the user logged out. Set this to 0 (zero) to disable
-  the <meta> tag.
- 
-  Note, as stated above, we test for content submission before doing
-  a logout so that users do not loose work. However, if you force a
-  meta refresh, this is not possible as the browser will refresh the
-  page without doing a submit or a preview. In this case, users may
-  loose work so use this option carefully. There's nothing more
-  annoying than loosing your work (except maybe hemorrhoids! ;)
-
-Enable watchdog auto-logout logging:
-  Check on to have the module record when it expires a user.
-
-Set-up your site policy by role:
-  You can specify, by role, how users are treated regarding timeout
-  issues. The three types of policy are :
-
-    Enforce: All users in this role have the timeout enforced on them
-    Exclude: All users in this role do not have the timeout enforced on them
-    By user: All users in this role have the choice to disable the timeout.
-
-Important note! The module by default uses Enforce. However, if a user is
-found to have any other exclusion (by role or by choice) this takes
-precidence over any Enforce that might have been in place.
-
-Finally, this module provides a block that displays the h,m,s left in this
-session (hours minutes seconds). It can be enabled in Admin > blocks and
-the title of the block can be set in the standard settings page. This block 
-is only displayed if you have the jstimer module installed.
-
-If a policy settings means a user is not subject to autologout (in a role
-of Exclude or By user and user set in profile not to autologout) then the
-block is not displayed. The block is only displayed to users who will be
-logged out if appropiate.
-
-
-
+* Configurable Global timeout and timeout padding. The latter determines how much time a user has to respond to the prompt and when the server side timeout will occur.
+* Configurable messaging.
+* Configurable redirect url, with the destination automatically appended.
+* Configure which roles will be automatically logged out.
+* Configure if a logout will occur on admin pages.
+* Integration with ui.dialog if available. This makes for attractive and more functional dialogs.
+* Configurable timeout based on role
+* Configurable timeout based on User
+* Configurable maximum timeout. Primarily used when a user has permission to change their timeout value, this will be a cap or maximum value they can use.
+* Order of presidence is, user timeout -> lowest role timeout -> global timeout
+* So if a user has a user timeout set, that is their timeout threshold, if none is set the lowest timeout value based on all the roles the user belongs to is used, if none is set the global timeout is used
+* Roles with the proper permission setting can change their timeout value
