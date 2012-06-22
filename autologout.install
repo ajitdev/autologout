@@ -20,5 +20,6 @@ function autologout_uninstall() {
   
   foreach (user_roles(TRUE) as $key => $role) {
     variable_del('autologout_role_' . $key);
+    variable_del('autologout_role_' . $key . '_timeout');
   }  
 }
