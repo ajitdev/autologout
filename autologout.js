@@ -1,23 +1,21 @@
 (function ($) {
-Drupal.behaviors.autologout = {
-attach: function(context, settings) {
+  Drupal.behaviors.autologout = {
+    attach: function(context, settings) {
 
-
-var t = setTimeout(init, Drupal.settings.autologout.timeout);
+      var t = setTimeout(init, Drupal.settings.autologout.timeout);
       var paddingTimer;
-      
-      function init() {
 
-          dialog();
-          paddingTimer = setTimeout(logout, Drupal.settings.autologout.timeout_padding);
-       }
-       
+      function init() {
+        dialog();
+        paddingTimer = setTimeout(logout, Drupal.settings.autologout.timeout_padding);
+      }
+
       function dialog() {
         $("<div> " +  Drupal.settings.autologout.message + "</div>").dialog({
           modal: true,
           closeOnEscape: false,
           width: "auto",
-          buttons: { 
+          buttons: {
             Yes: function() {
               $(this).dialog("destroy");
               clearTimeout(paddingTimer);
@@ -33,10 +31,8 @@ var t = setTimeout(init, Drupal.settings.autologout.timeout);
             logout();
           }
         });
-
-        
       }
-       
+
       function logout() {
         $.ajax({
           url: Drupal.settings.basePath + "autologout_ahah_logout",
@@ -49,8 +45,8 @@ var t = setTimeout(init, Drupal.settings.autologout.timeout);
           },
         });
       }
-     
-       function refresh() {
+
+      function refresh() {
         $.ajax({
           url: Drupal.settings.basePath + "autologout_ahah_set_last",
           type: "POST",
@@ -63,7 +59,6 @@ var t = setTimeout(init, Drupal.settings.autologout.timeout);
         });
       }
 
-}
-
-};
-})(jQuery);    
+    }
+  };
+})(jQuery);
