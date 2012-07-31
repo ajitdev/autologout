@@ -17,6 +17,7 @@ function autologout_uninstall() {
   variable_del('autologout_padding');
   variable_del('autologout_enforce_admin');
   variable_del('autologout_role_logout');
+  variable_del('autologout_max_timeout');
 
   foreach (user_roles(TRUE) as $key => $role) {
     variable_del('autologout_role_' . $key);

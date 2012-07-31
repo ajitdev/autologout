@@ -109,7 +109,7 @@ function theme_autologout_render_table($variables) {
  */
 function autologout_timeout_validate($timeout) {
   $validate = FALSE;
-  $max = variable_get('max_timeout', '172800');
+  $max = variable_get('autologout_max_timeout', '172800');
   if ($timeout < 60 || $timeout > $max || !is_numeric($timeout)) { // Less then 60, greater then max and is numaric.
     $validate = FALSE;
   }
@@ -150,7 +150,7 @@ function autologout_form_user_profile_form_alter(&$form, $form_state) {
 }
 
 function _autologout_user_uid_timeout_validate($element, &$form_state) {
-  $max_timeout = variable_get('max_timeout', 172800);
+  $max_timeout = variable_get('autologout_max_timeout', 172800);
   $timeout = $element['#value'];
 
   // Set error if it has a value that isnt stricly a number between 60 and max.

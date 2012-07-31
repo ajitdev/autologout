@@ -24,10 +24,10 @@ function autologout_settings() {
     '#weight' => -10,
     '#description' => t('The length of inactivity time, in seconds, before Automated Logout.  Must be 60 seconds or greater. Will not be used if role timeout is activated')
   );
-    $form['max_timeout'] = array(
+    $form['autologout_max_timeout'] = array(
     '#type' => 'textfield',
     '#title' => t('Max timeout setting'),
-    '#default_value' => variable_get('max_timeout', '172800'),
+    '#default_value' => variable_get('autologout_max_timeout', '172800'),
     '#size' => 10,
     '#maxlength' => 12,
     '#weight' => -8,
@@ -104,7 +104,7 @@ function autologout_settings() {
 
 
 function autologout_settings_validate($form, &$form_state) {  
-$max_timeout = $form_state['values']['max_timeout'];
+$max_timeout = $form_state['values']['autologout_max_timeout'];
 $role_timeout = _autologout_get_role_timeout();
 
    // Validate timeouts for each role
