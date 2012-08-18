@@ -26,7 +26,7 @@ function autologout_permission() {
 function autologout_menu() {
   $items = array();
 
-  $items['admin/people/autologout'] = array(
+  $items['admin/config/people/autologout'] = array(
     'title' => 'Auto Logout',
     'description' => 'Administer Auto Logout settings.',
     'page callback' => 'drupal_get_form',
