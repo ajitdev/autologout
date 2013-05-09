@@ -56,27 +56,29 @@
             if (XMLHttpRequest.status == 403) {
               window.location = Drupal.settings.autologout.redirect_url;
             }
-          },
+          }
         });
       }
 
       function dialog() {
+        var buttons = {};
+        buttons[Drupal.t('Yes')] = function() {
+          $(this).dialog("destroy");
+          clearTimeout(paddingTimer);
+          refresh();
+        };
+
+        buttons[Drupal.t('No')] = function() {
+          $(this).dialog("destroy");
+          logout();
+        };
+
         return $('<div> ' +  Drupal.settings.autologout.message + '</div>').dialog({
           modal: true,
           closeOnEscape: false,
           width: "auto",
-          buttons: {
-            Yes: function() {
-              $(this).dialog("destroy");
-              clearTimeout(paddingTimer);
-              refresh();
-            },
-            No: function() {
-              $(this).dialog("destroy");
-              logout();
-            }
-          },
           title: Drupal.settings.autologout.title,
+          buttons: buttons,
           close: function(event, ui) {
             logout();
           }
@@ -113,7 +115,7 @@
             if (XMLHttpRequest.status == 403) {
               window.location = Drupal.settings.autologout.redirect_url;
             }
-          },
+          }
         });
       }
 
@@ -128,7 +130,7 @@
             if (XMLHttpRequest.status == 403) {
               window.location = Drupal.settings.autologout.redirect_url;
             }
-          },
+          }
         });
       }
 
