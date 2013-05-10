@@ -134,10 +134,15 @@ function autologout_timeout_validate($timeout) {
  * Adds a field to user/edit to change that users logout.
  */
 function autologout_form_user_profile_form_alter(&$form, $form_state) {
+  if ($form['#user_category'] != 'account') {
+    // Only include the timeout on main user profile.
+    return;
+  }
+
   $user_timeout = _autologout_get_user_timeout();
   global $user;
-  $current_uid = $user -> uid; // Get UID of user that is accessing page
-  $userid = $form_state['user'] -> uid; // Get UID of user whos profile is being edited
+  $current_uid = $user->uid;
+  $userid = $form_state['user']->uid;
   $access = FALSE;
 
   // If user has access to change, and they are changing their own and only
