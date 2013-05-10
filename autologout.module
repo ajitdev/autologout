@@ -35,22 +35,25 @@ function autologout_menu() {
     'file' => 'autologout.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
+
   $items['autologout_ahah_logout'] = array(
     'title' => 'JS Logout',
     'page callback' => 'autologout_ahah_logout',
-    'access callback' => '_autologout_access_ahah',
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
+
   $items['autologout_ahah_set_last'] = array(
     'title' => 'JS Logout AHAH Set Last',
     'page callback' => 'autologout_ahah_set_last',
-    'access callback' => '_autologout_access_ahah',
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
+
   $items['autologout_ajax_get_time_left'] = array(
     'title' => 'JS Logout AJAX Get Time Until Logout',
     'page callback' => 'autologout_ahah_get_remaining_time',
-    'access callback' => '_autologout_access_ahah',
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
 
@@ -366,14 +369,6 @@ function _autologout_get_user_timeout() {
     $user_timeout = variable_get('autologout_user_' . $userid, $default_timeout);
   }
   return $user_timeout;
-}
-
-/**
- * Access callback for ahah menu items.
- */
-function _autologout_access_ahah() {
-  global $user;
-  return $user->uid && user_access('access content');
 }
 
 /**
