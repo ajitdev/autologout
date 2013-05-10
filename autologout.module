@@ -5,7 +5,7 @@
  */
 
 /**
- * Add permission for users to change their own logout threshold
+ * Implements hook_permission().
  */
 function autologout_permission() {
   return array(
@@ -13,7 +13,7 @@ function autologout_permission() {
       'title' => t('Change own logout threshold'),
       'description' => t('Selected users will be able to edit there own logout threshold.'),
     ),
-    'auto administer autologout'  => array( // Change autologout settings and timeouts for other users.
+    'administer autologout'  => array( // Change autologout settings and timeouts for other users.
       'title' => t('Administer Autologout'),
       'description' => t('Administer the autologout settings'),
     ),
