@@ -400,11 +400,8 @@ function _autologout_logout() {
   watchdog('user', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
 
   // Destroy the current session.
+  module_invoke_all('user_logout', $user);
   session_destroy();
-
-  // Only variables can be passed by reference workaround.
-  $null = NULL;
-  user_module_invoke('logout', $null, $user);
 
   // Load the anonymous user.
   $user = drupal_anonymous_user();
