@@ -77,6 +77,7 @@
           modal: true,
           closeOnEscape: false,
           width: "auto",
+          dialogClass: 'autologout-dialog',
           title: Drupal.settings.autologout.title,
           buttons: buttons,
           close: function(event, ui) {
