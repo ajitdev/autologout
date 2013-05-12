@@ -329,6 +329,7 @@ function autologout_ahah_set_last() {
 function _autologout_get_role_timeout() {
   $default_timeout = variable_get('autologout_timeout', 1800);
   $roles = user_roles(TRUE);
+  $role_timeout = array();
 
   // Go through roles, get timeouts for each and return as array.
   foreach ($roles as $rid => $role) {
@@ -337,6 +338,7 @@ function _autologout_get_role_timeout() {
       $role_timeout[$rid] = $timeout_role;
     }
   }
+
   return $role_timeout;
 }
 
@@ -378,7 +380,9 @@ function _autologout_get_user_timeout($uid = NULL) {
     $timeouts = _autologout_get_role_timeout();
 
     foreach ($user_roles as $rid => $role) {
-      $output[$rid] = $timeouts[$rid];
+      if (isset($timeouts[$rid])) {
+        $output[$rid] = $timeouts[$rid];
+      }
     }
 
     // Assign the lowest timeout value to be session timeout value.

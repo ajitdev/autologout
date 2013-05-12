@@ -1,0 +1,154 @@
+<?php
+
+/**
+ * @file
+ * Simpletest tests for autologout.
+ */
+
+/**
+ * Tests the autologout's features.
+ */
+class AutologoutTestCase extends DrupalWebTestCase {
+
+  /**
+   * User with admin rights.
+   */
+  protected $privileged_user;
+
+  /**
+   * getInfo() returns properties that are displayed in the test selection form.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Autologout Tests',
+      'description' => 'Ensure that the autologout module functions as expected',
+      'group' => 'Autologout',
+    );
+  }
+
+  /**
+   * setUp() performs any pre-requisite tasks that need to happen.
+   */
+  public function setUp() {
+    // Enable any modules required for the test.
+    parent::setUp('autologout');
+
+    // Create and log in our privileged user.
+    $this->privileged_user = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes'));
+    $this->drupalLogin($this->privileged_user);
+
+    // For the purposes of the test, set the timeout periods to 10 seconds.
+    variable_set('autologout_timeout', 10);
+    variable_set('autologout_padding', 10);
+  }
+
+  /**
+   * Test the precedence of the timeouts.
+   *
+   * This tests the following function:
+   * _autologout_get_user_timeout();
+   */
+  public function testAutologoutTimeoutPrecedence() {
+    $uid = $this->privileged_user->uid;
+
+    // Default used if no role is specified.
+    variable_set('autologout_timeout', 100);
+    variable_set('autologout_role_logout', FALSE);
+    variable_set('autologout_role_2', FALSE);
+    variable_set('autologout_role_2_timeout', 200);
+    $this->assertAutotimeout($uid, 100, t('User timeout uses default if no other option set'));
+
+    // Default used if role selected but no user's role is selected.
+    variable_set('autologout_role_logout', TRUE);
+    variable_set('autologout_role_2', FALSE);
+    variable_set('autologout_role_2_timeout', 200);
+    $this->assertAutotimeout($uid, 100, t('User timeout uses default if  role timeouts are used but not one of the current user.'));
+
+    // Role timeout is used if user's role is selected.
+    variable_set('autologout_role_logout', TRUE);
+    variable_set('autologout_role_2', TRUE);
+    variable_set('autologout_role_2_timeout', 200);
+    $this->assertAutotimeout($uid, 200, t('User timeout uses role value'));
+
+    // Role timeout is used if user's role is selected.
+    variable_set('autologout_role_logout', TRUE);
+    variable_set('autologout_role_2', TRUE);
+    variable_set('autologout_role_2_timeout', 0);
+    $this->assertAutotimeout($uid, 0, t('User timeout uses role value of 0 if set for one of the user roles.'));
+
+    // Role timeout used if personal timeout is empty string.
+    variable_set('autologout_role_logout', TRUE);
+    variable_set('autologout_role_2', TRUE);
+    variable_set('autologout_role_2_timeout', 200);
+    variable_set('autologout_user_' . $uid, '');
+    $this->assertAutotimeout($uid, 200, t('User timeout uses role value if personal value is the empty string.'));
+
+    // Default timeout used if personal timeout is empty string.
+    variable_set('autologout_role_logout', TRUE);
+    variable_set('autologout_role_2', FALSE);
+    variable_set('autologout_role_2_timeout', 200);
+    variable_set('autologout_user_' . $uid, '');
+    $this->assertAutotimeout($uid, 100, t('User timeout uses default value if personal value is the empty string and no role timeout is specified.'));
+
+    // Personal timeout used if set.
+    variable_set('autologout_role_logout', TRUE);
+    variable_set('autologout_role_2', TRUE);
+    variable_set('autologout_role_2_timeout', 200);
+    variable_set('autologout_user_' . $uid, 300);
+    $this->assertAutotimeout($uid, 300, t('User timeout uses default value if personal value is the empty string and no role timeout is specified.'));
+  }
+
+  /**
+   * Test a user is logged out after the default timeout period.
+   */
+  public function testAutologoutDefaultTimeout() {
+    // Check that the user can access the page after login.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+
+    // Wait for timeout period to elapse.
+    sleep(20);
+
+    // Check we are now logged out.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
+    //$this->assertText(t('You have been logged out due to inactivity.'), t('User sees inactivity message.'));
+  }
+
+  /**
+   * Test a user is not logged out within the default timeout period.
+   */
+  public function testAutologoutNoLogoutInsideTimeout() {
+    // Check that the user can access the page after login.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+
+    // Wait within the timeout period.
+    sleep(10);
+
+    // Check we are still logged in.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+    $this->assertNoText(t('You have been logged out due to inactivity.'), t('User does not see inactivity message.'));
+  }
+
+  /**
+   * Assert the timeout for a particular user.
+   *
+   * @param int $uid
+   *   User uid to assert the timeout for.
+   * @param int $expected_timeout
+   *   The expected timeout.
+   * @param string $message
+   *   The test message
+   * @param string $group
+   *   The test grouping
+   */
+  public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
+    return $this->assertEqual(_autologout_get_user_timeout($uid), $expected_timeout, $message, $group);
+  }
+}
