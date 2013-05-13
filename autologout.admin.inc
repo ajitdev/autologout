@@ -120,10 +120,16 @@ function autologout_settings_validate($form, &$form_state) {
 
   // Validate timeouts for each role.
   foreach (user_roles(TRUE) as $key => $role) {
+    if (empty($form_state['values']['autologout_role_' . $key])) {
+      // Don't validate role timeouts for non enabled roles.
+      continue;
+    }
+
     $timeout = $form_state['values']['autologout_role_' . $key . '_timeout'];
-    $validate = autologout_timeout_validate($timeout);
+    $validate = autologout_timeout_validate($timeout, $max_timeout);
+
     if (!$validate) {
-      form_set_error('autologout_role_' . $key . '_timeout', t('%role role timeout must be an integer greater than 60, and less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
+      form_set_error('autologout_role_' . $key . '_timeout', t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
     }
   }
 
@@ -131,6 +137,6 @@ function autologout_settings_validate($form, &$form_state) {
 
   // Validate timeout.
   if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
-    form_set_error('autologout_timeout', t('The timeout must be an integer greater than 60, and less then %max.', array('%max' => $max_timeout)));
+    form_set_error('autologout_timeout', t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
   }
 }

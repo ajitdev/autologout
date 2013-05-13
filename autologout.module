@@ -115,18 +115,29 @@ function theme_autologout_render_table($variables) {
 /**
  * Checks to see if timeout threshold is outside max/min values. Only done here
  * to centrilize and stop repeated code. Hard coded min, configurable max.
+ *
+ * @param int $timeout
+ *   The timeout value in seconds to validate
+ * @param int $max_timeout
+ *   (optional) A maximum timeout. If not set the current system
+ *   default maximum is used.
  */
-function autologout_timeout_validate($timeout) {
+function autologout_timeout_validate($timeout, $max_timeout = NULL) {
   $validate = FALSE;
-  $max = variable_get('autologout_max_timeout', '172800');
-  if (!is_numeric($timeout) || $timeout < 0 || ($timeout > 0 && $timeout < 60) || $timeout > $max) {
-    // Less then 60, greater then max and is numeric.
+
+  if (is_null($max_timeout)) {
+    $max_timeout = variable_get('autologout_max_timeout', '172800');
+  }
+
+  if (!is_numeric($timeout) || $timeout < 0 || ($timeout > 0 && $timeout < 60) || $timeout > $max_timeout) {
+    // Less then 60, greater then max_timeout and is numeric.
     // 0 is allowed now as this means no timeout.
     $validate = FALSE;
   }
   else {
     $validate = TRUE;
   }
+
   return $validate;
 }
 
