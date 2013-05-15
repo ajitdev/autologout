@@ -303,9 +303,8 @@ function autologout_autologout_prevent() {
  * Implements hook_autologout_refresh_only().
  */
 function autologout_autologout_refresh_only() {
-  // Check to see if an open admin page will keep
-  // login alive.
-  if (arg(0) == 'admin' && !variable_get('autologout_enforce_admin', FALSE)) {
+  // Check to see if an open admin page will keep login alive.
+  if (!variable_get('autologout_enforce_admin', FALSE) && path_is_admin(current_path())) {
     return TRUE;
   }
 }

@@ -213,6 +213,31 @@ class AutologoutTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test enforce logout on admin page settings.
+   */
+  public function testAutlogoutOfAdminPages() {
+
+    // Set an admin page path.
+    $_GET['q'] = 'admin';
+
+    // Check if user will be kept logged in on admin paths with enforce dsabled.
+    variable_set('autologout_enforce_admin', FALSE);
+    $this->assertEqual(autologout_autologout_refresh_only(), TRUE, t('Autologout does logout of admin pages without enforce on admin checked.'));
+
+    // Check if user will not be kept logged in on admin paths if enforce enabled.
+    variable_set('autologout_enforce_admin', TRUE);
+    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('Autologout does not logout of admin pages with enforce on admin not checked.'));
+
+    // Set a non admin page path.
+    $_GET['q'] = 'node';
+
+    variable_set('autologout_enforce_admin', FALSE);
+    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.'));
+    variable_set('autologout_enforce_admin', TRUE);
+    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.'));
+  }
+
+  /**
    * Assert the timeout for a particular user.
    *
    * @param int $uid
