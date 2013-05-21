@@ -260,11 +260,18 @@ function autologout_init() {
 
   // We need a backup plan if JS is disabled.
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
-    // If time since last access is > than the timeout + some padding, logout
-    // the user. User doesn't get "Logged out" untill next page load.
+    // If time since last access is > than the timeout + padding, log them out.
     if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
       _autologout_logout();
-      drupal_goto($redirct_url, $redirect_query);
+
+      // User has changed so force Drupal to remake decisions based on user.
+      global $theme, $theme_key;
+      drupal_static_reset();
+      $theme = NULL;
+      $theme_key = NULL;
+      menu_set_custom_theme();
+      drupal_theme_initialize();
+      drupal_set_message(t('You have been logged out due to inactivity.'));
     }
     else {
       $_SESSION['autologout_last'] = $now;

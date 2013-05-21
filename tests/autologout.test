@@ -114,7 +114,7 @@ class AutologoutTestCase extends DrupalWebTestCase {
     $this->drupalGet('node');
     $this->assertResponse(200, t('Homepage is accessible'));
     $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
-    //$this->assertText(t('You have been logged out due to inactivity.'), t('User sees inactivity message.'));
+    $this->assertText(t('You have been logged out due to inactivity.'), t('User sees inactivity message.'));
   }
 
   /**
@@ -238,6 +238,30 @@ class AutologoutTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test a user is logged out and denied access to admin pages.
+   */
+  public function testAutologoutDefaultTimeoutAccessDeniedToAdmin() {
+    // Enforce auto logout of admin pages.
+    variable_set('autologout_enforce_admin', TRUE);
+
+    // Check that the user can access the page after login.
+    $this->drupalGet('admin/reports/status');
+    $this->assertResponse(200, t('Admin page is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+    $this->assertText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), t('User can access elements of the admin page.'));
+
+    // Wait for timeout period to elapse.
+    sleep(20);
+
+    // Check we are now logged out.
+    $this->drupalGet('admin/reports/status');
+    $this->assertResponse(403, t('Admin page returns 403 access denied.'));
+    $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
+    $this->assertNoText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), t('User cannot access elements of the admin page.'));
+    $this->assertText(t('You have been logged out due to inactivity.'), t('User sees inactivity message.'));
+  }
+
+  /**
    * Assert the timeout for a particular user.
    *
    * @param int $uid
@@ -251,5 +275,111 @@ class AutologoutTestCase extends DrupalWebTestCase {
    */
   public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
     return $this->assertEqual(_autologout_get_user_timeout($uid), $expected_timeout, $message, $group);
+  }
+}
+
+/**
+ * Test the Autologout ajax endpoints.
+ */
+class AutologoutAjaxTestCase extends DrupalWebTestCase {
+
+  /**
+   * User with admin rights.
+   */
+  protected $privileged_user;
+
+  /**
+   * getInfo() returns properties that are displayed in the test selection form.
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Autologout Ajax Tests',
+      'description' => 'Ensure the AJAX endpoints work as expected',
+      'group' => 'Autologout',
+    );
+  }
+
+  /**
+   * setUp() performs any pre-requisite tasks that need to happen.
+   */
+  public function setUp() {
+    // Enable any modules required for the test.
+    parent::setUp('autologout');
+
+    // Create and log in our privileged user.
+    $this->privileged_user = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
+    $this->drupalLogin($this->privileged_user);
+  }
+
+  /**
+   * Test ajax logout callbacks work as expected.
+   */
+  public function testAutologoutByAjax() {
+    variable_set('autologout_timeout', 100);
+    variable_set('autologout_padding', 10);
+
+    // Check that the user can access the page after login.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+
+    // Test the time remaining callback works as expected.
+    $json_string = $this->drupalGet('autologout_ajax_get_time_left');
+    $this->assertResponse(200, t('autologout_ajax_get_time_left is accessible when logged in'));
+    $json_response = json_decode($json_string);
+    $this->assert(is_object($json_response) && isset($json_response->time) && is_numeric($json_response->time), t('autologout_ajax_get_time_left returns a numeric time remaining'));
+
+    // Test that ajax logout works as expected.
+    $json_string = $this->drupalGet('autologout_ahah_logout');
+    $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in'));
+
+    // Check we are now logged out.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
+
+    // Check further get time remaining requests return access denied.
+    $this->drupalGet('autologout_ajax_get_time_left');
+    $this->assertResponse(403, t('autologout_ajax_get_time_left is not accessible when logged out.'));
+
+    // Check further logout requests result in access denied.
+    $this->drupalGet('autologout_ahah_logout');
+    $this->assertResponse(403, t('autologout_ahah logout is not accessible when logged out.'));
+  }
+
+  /**
+   * Test ajax stay logged in callbacks work as expected.
+   */
+  public function testStayloggedInByAjax() {
+    variable_set('autologout_timeout', 20);
+    variable_set('autologout_padding', 5);
+
+    // Check that the user can access the page after login.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+
+    // Sleep for half the timeout.
+    sleep(14);
+
+    // Test that ajax stay logged in works.
+    $this->drupalGet('autologout_ahah_set_last');
+    $this->assertResponse(200, t('autologout_ahah_set_last is accessible when logged in.'));
+
+    // Sleep for half the timeout again.
+    sleep(14);
+
+    // Check we are still logged in.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+
+    // Logout.
+    $this->drupalGet('autologout_ahah_logout');
+    $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in.'));
+
+    // Check further requests to set last result in 403.
+    $this->drupalGet('autologout_ahah_set_last');
+    $this->assertResponse(403, t('autologout_ahah_set_last is not accessible when logged out.'));
   }
 }
