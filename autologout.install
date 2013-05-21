@@ -33,3 +33,44 @@ function autologout_uninstall() {
     variable_del('autologout_user_' . $uid);
   }
 }
+
+/**
+ * Upgrade autologout 2.x series to 4.x series.
+ */
+function autologout_update_7400() {
+  $old_settings = variable_get('autologout', FALSE);
+
+  if (!empty($old_settings)) {
+    if (!empty($old_settings['enabled'])) {
+      variable_set('autologout_enabled', $old_settings['enabled']);
+    }
+
+    if (!empty($old_settings['timeout'])) {
+      variable_set('autologout_timeout', $old_settings['timeout']);
+    }
+
+    if (!empty($old_settings['use_watchdog'])) {
+      variable_set('autologout_use_watchdog', $old_settings['use_watchdog']);
+    }
+
+    if (!empty($old_settings['logout_message'])) {
+      variable_set('autologout_message', $old_settings['logout_message']);
+    }
+
+    if (!empty($old_settings['redirect_url'])) {
+      variable_set('autologout_redirect_url', $old_settings['redirect_url']);
+    }
+
+    if (!empty($old_settings['refresh_delta']) && $old_settings['refresh_delta'] >= 0) {
+      variable_set('autologout_padding', $old_settings['refresh_delta']);
+    }
+  }
+
+  // Delete the autologout table.
+  if (db_table_exists('autologout')) {
+    // This functionality no longer exists.
+    db_drop_table('autologout');
+  }
+
+  drupal_flush_all_caches();
+}
