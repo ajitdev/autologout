@@ -32,7 +32,7 @@ function autologout_settings() {
     '#size' => 10,
     '#maxlength' => 12,
     '#weight' => -8,
-    '#description' => t('The maximum logout threshold time'),
+    '#description' => t('The maximum logout threshold time that can be set by users who have the permission to set user level timeouts.'),
   );
 
   $form['autologout_padding'] = array(
