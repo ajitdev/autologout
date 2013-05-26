@@ -304,6 +304,11 @@ function autologout_autologout_prevent() {
   if (empty($user->uid) || (!_autologout_get_user_timeout())) {
     return TRUE;
   }
+
+  // If the user has checked remember_me via the remember_me module.
+  if (!empty($user->data['remember_me'])) {
+    return TRUE;
+  }
 }
 
 /**

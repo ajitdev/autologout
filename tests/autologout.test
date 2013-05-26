@@ -262,6 +262,30 @@ class AutologoutTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test integration with the remember me module.
+   *
+   * Users who checked remember_me on login should never be logged out.
+   */
+  public function testNoAutologoutWithRememberMe() {
+    // Set the remember_me module data bit to TRUE.
+    $this->privileged_user->data['remember_me'] = TRUE;
+    user_save($this->privileged_user);
+
+    // Check that the user can access the page after login.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in.'));
+
+    // Wait for timeout period to elapse.
+    sleep(20);
+
+    // Check we are still logged in.
+    $this->drupalGet('node');
+    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertText(t('Log out'), t('User is still logged in after timeout with remember_me on.'));
+  }
+
+  /**
    * Assert the timeout for a particular user.
    *
    * @param int $uid
