@@ -419,7 +419,10 @@ function _autologout_get_user_timeout($uid = NULL) {
  */
 function _autologout_logout() {
   global $user;
-  watchdog('user', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
+
+  if (variable_get('autologout_use_watchdog', FALSE)) {
+    watchdog('user', 'Session automatically closed for %name by autologout.', array('%name' => $user->name));
+  }
 
   // Destroy the current session.
   module_invoke_all('user_logout', $user);
