@@ -215,7 +215,7 @@ function autologout_init() {
 
   if (empty($user->uid)) {
     if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
-      drupal_set_message(t('You have been logged out due to inactivity.'));
+      _autologout_inactivity_message();
     }
     return;
   }
@@ -271,7 +271,7 @@ function autologout_init() {
       $theme_key = NULL;
       menu_set_custom_theme();
       drupal_theme_initialize();
-      drupal_set_message(t('You have been logged out due to inactivity.'));
+      _autologout_inactivity_message();
     }
     else {
       $_SESSION['autologout_last'] = $now;
@@ -442,4 +442,14 @@ function _autologout_logout_role($user) {
   }
 
   return FALSE;
+}
+
+/**
+ * Display the inactivity message if required.
+ */
+function _autologout_inactivity_message() {
+  $message = variable_get('autologout_inactivity_message', 'You have been logged out due to inactivity.');
+  if (!empty($message)) {
+    drupal_set_message(t($message));
+  }
 }

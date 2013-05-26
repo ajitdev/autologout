@@ -68,6 +68,14 @@ function autologout_settings() {
     '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.'),
   );
 
+  $form['autologout_inactivity_message']  = array(
+    '#type' => 'textarea',
+    '#title' => t('Message to display to the user after they are logged out.'),
+    '#default_value' => variable_get('autologout_inactivity_message', 'You have been logged out due to inactivity.'),
+    '#size' => 40,
+    '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.'),
+  );
+
   $form['autologout_use_watchdog'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable watchdog Automated Logout logging'),
