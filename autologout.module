@@ -321,8 +321,9 @@ function autologout_autologout_refresh_only() {
  */
 function autologout_ahah_get_remaining_time() {
   $timeout = _autologout_get_user_timeout();
-  $time_passed = time() - $_SESSION['autologout_last'];
-  drupal_json_output(array('time' => (($timeout - $time_passed) * 1000)));
+  $time_passed = isset($_SESSION['autologout_last']) ? time() - $_SESSION['autologout_last'] : 0;
+  $time_remaining_ms = ($timeout - $time_passed) * 1000;
+  drupal_json_output(array('time' => $time_remaining_ms));
 }
 
 /**
