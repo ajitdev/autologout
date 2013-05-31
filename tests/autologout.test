@@ -348,10 +348,12 @@ class AutologoutAjaxTestCase extends DrupalWebTestCase {
     $this->assertText(t('Log out'), t('User is still logged in.'));
 
     // Test the time remaining callback works as expected.
-    $json_string = $this->drupalGet('autologout_ajax_get_time_left');
+    $result = $this->drupalGet('autologout_ajax_get_time_left');
     $this->assertResponse(200, t('autologout_ajax_get_time_left is accessible when logged in'));
-    $json_response = json_decode($json_string);
-    $this->assert(is_object($json_response) && isset($json_response->time) && is_numeric($json_response->time), t('autologout_ajax_get_time_left returns a numeric time remaining'));
+    $result = json_decode($result);
+    $this->assertEqual('insert', $result[1]->command, t('autologout_ajax_get_time_left returns an insert command for adding the jstimer onto the page'));
+    $this->assertEqual('#timer', $result[1]->selector, t('autologout_ajax_get_time_left specifies the #timer selector.'));
+    $this->assert(!empty($result[2]->settings->time) && is_int($result[2]->settings->time) && $result[2]->settings->time > 0, t('autologout_ajax_get_time_left returns the remaining time as a positive integer'));
 
     // Test that ajax logout works as expected.
     $json_string = $this->drupalGet('autologout_ahah_logout');
@@ -363,8 +365,9 @@ class AutologoutAjaxTestCase extends DrupalWebTestCase {
     $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
 
     // Check further get time remaining requests return access denied.
-    $this->drupalGet('autologout_ajax_get_time_left');
-    $this->assertResponse(403, t('autologout_ajax_get_time_left is not accessible when logged out.'));
+    $result = $this->drupalGet('autologout_ajax_get_time_left');
+    $result = json_decode($result);
+    $this->assertEqual($result[1]->command, 'alert', t('When logged out, autologout_ajax_get_time_left returns the normal Drupal ajax alert.'));
 
     // Check further logout requests result in access denied.
     $this->drupalGet('autologout_ahah_logout');
@@ -387,8 +390,11 @@ class AutologoutAjaxTestCase extends DrupalWebTestCase {
     sleep(14);
 
     // Test that ajax stay logged in works.
-    $this->drupalGet('autologout_ahah_set_last');
+    $result = $this->drupalGet('autologout_ahah_set_last');
     $this->assertResponse(200, t('autologout_ahah_set_last is accessible when logged in.'));
+    $result = json_decode($result);
+    $this->assertEqual('insert', $result[1]->command, t('autologout_ajax_set_last returns an insert command for adding the jstimer onto the page'));
+    $this->assertEqual('#timer', $result[1]->selector, t('autologout_ajax_set_last specifies the #timer selector.'));
 
     // Sleep for half the timeout again.
     sleep(14);
@@ -403,7 +409,8 @@ class AutologoutAjaxTestCase extends DrupalWebTestCase {
     $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in.'));
 
     // Check further requests to set last result in 403.
-    $this->drupalGet('autologout_ahah_set_last');
-    $this->assertResponse(403, t('autologout_ahah_set_last is not accessible when logged out.'));
+    $result = $this->drupalGet('autologout_ahah_set_last');
+    $result = json_decode($result);
+    $this->assertEqual($result[1]->command, 'alert', t('When logged out, autologout_ajax_set_last returns the normal Drupal ajax alert.'));
   }
 }

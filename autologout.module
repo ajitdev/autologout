@@ -48,6 +48,8 @@ function autologout_menu() {
     'page callback' => 'autologout_ahah_set_last',
     'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
+    'theme callback' => 'ajax_base_page_theme',
+    'delivery callback' => 'ajax_deliver',
   );
 
   $items['autologout_ajax_get_time_left'] = array(
@@ -55,16 +57,121 @@ function autologout_menu() {
     'page callback' => 'autologout_ahah_get_remaining_time',
     'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
+    'theme callback' => 'ajax_base_page_theme',
+    'delivery callback' => 'ajax_deliver',
   );
 
   return $items;
 }
 
 /**
+ * Implements hook_block_info().
+ */
+function autologout_block_info() {
+  $blocks = array();
+
+  $blocks['info'] = array(
+    'info' => t('Automated Logout info'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function autologout_block_view($delta = '') {
+  $block = array();
+
+  if (_autologout_prevent()) {
+    // Don't display the block if the user is not going
+    // to be logged out on this page.
+    return;
+  }
+
+  $block['subject'] = t('Autologout warning block');
+
+  if (_autologout_refresh_only()) {
+    $block['content'] = t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
+  }
+  elseif (module_exists('jstimer') && module_exists('jst_timer')) {
+    $block['content'] = array(drupal_get_form('autologout_create_block_form'));
+  }
+  else {
+    $timeout = (int) variable_get('autologout_timeout', 1800);
+    $block['content'] = t('You will be logged out in !time if this page is not refreshed before then.', array('!time' => format_interval($timeout)));
+  }
+
+  return $block;
+}
+
+/**
+ * Drupal reset timer form on timer block.
+ */
+function autologout_create_block_form() {
+
+  $markup = autologout_create_timer();
+
+  $form['test'] = array(
+    '#type' => 'button',
+    '#value' => t('Reset Timeout'),
+    '#weight' => 1,
+    '#limit_validation_errors' => FALSE,
+    '#executes_submit_callback' => FALSE,
+    '#ajax' => array(
+      'callback' => 'autologout_ahah_set_last',
+    ),
+  );
+
+  $form['timer'] = array(
+    '#type' => 'markup',
+    '#value' => $markup,
+    '#markup' => $markup,
+  );
+
+  return $form;
+}
+
+/**
+ * Get the timer HTML markup.
+ *
+ * @return string
+ *   HTML to insert a countdown timer.
+ */
+function autologout_create_timer() {
+  $time_remaining = _autologout_get_remaining_time();
+  $timeformat = filter_xss_admin(variable_get('autologout_jstimer_format', '%hours%:%mins%:%secs%'));
+
+  return theme('autologout_block', array(
+    'time_remaining' => $time_remaining,
+    'timeformat' => $timeformat));
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function autologout_block_configure($delta = '') {
+  $block = array();
+
+  if (module_exists('jstimer')) {
+    if (!module_exists('jst_timer')) {
+      drupal_set_message(t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
+    }
+
+    if (variable_get('jstimer_js_load_option', 0) != 1) {
+      drupal_set_message(t('The Javascript timer module\'s "Javascript load options" setting should be set to "Every page" for the dynamic countdown to work in the automated logout block.'), 'error');
+    }
+  }
+
+  return $block;
+}
+
+/**
  * Implements hook_help().
  */
 function autologout_help($path, $arg) {
-  $output = _autologout_get_user_timeout(); // Prints users current timeout in seconds, Very useful!
+  $output = _autologout_get_user_timeout();
+
   switch ($path) {
     case 'admin/help#autologout':
       return '<p>' . t('This module allows you to force site users to be logged out after a given amount of time due to inactivity after first being presented with a confirmation dialog. Your current logout threshold is ' . $output . " seconds.") . '</p>';
@@ -79,6 +186,12 @@ function autologout_theme() {
     'autologout_render_table' => array(
       'render element' => 'element',
     ),
+    'autologout_block' => array(
+      'variables' => array(
+          'time_left' => NULL,
+          'time_format' => NULL,
+        ),
+      ),
   );
 }
 
@@ -110,6 +223,19 @@ function theme_autologout_render_table($variables) {
   $output = $table; // Add table to output.
 
   return $output;
+}
+
+/**
+ * Returns HTML for the autologout block.
+ */
+function theme_autologout_block($variables) {
+  $time_remaining = $variables['time_remaining'];
+  $timeformat = $variables['timeformat'];
+
+  return "<div id='timer'><span class='jst_timer'>
+    <span class='interval' style='display: none;'>$time_remaining</span>
+    <span class='format_txt' style='display:none;'>$timeformat</span>
+    </span></div>";
 }
 
 /**
@@ -221,27 +347,19 @@ function autologout_init() {
   }
 
   // Check if JS should be included on this request.
-  foreach (module_invoke_all('autologout_prevent') as $prevent) {
-    if (!empty($prevent)) {
-      return;
-    }
+  if (_autologout_prevent()) {
+    return;
   }
 
   // Check if anything wants to be refresh only. This URL would
   // include the javascript but will keep the login alive whilst
   // that page is opened.
-  $refresh_only = FALSE;
-  foreach (module_invoke_all('autologout_refresh_only') as $module_refresh_only) {
-    if (!empty($module_refresh_only)) {
-      $refresh_only = TRUE;
-      break;
-    }
-  }
+  $refresh_only = _autologout_refresh_only();
 
   $now = time();
   $timeout = _autologout_get_user_timeout();
   $timeout_padding = variable_get('autologout_padding', 10);
-  $redirct_url = variable_get('autologout_redirect_url', 'user/login');
+  $redirect_url = variable_get('autologout_redirect_url', 'user/login');
   $redirect_query = drupal_get_destination() + array('autologout_timeout' => 1);
   drupal_add_library('system', 'ui.dialog');
 
@@ -251,10 +369,12 @@ function autologout_init() {
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
-    'redirect_url' => url($redirct_url, array('query' => $redirect_query)),
+    'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
     'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Drupal'))),
     'refresh_only' => $refresh_only,
   );
+
+  drupal_add_library('system', 'drupal.ajax');
   drupal_add_js(array('autologout' => $settings), 'setting');
   drupal_add_js(drupal_get_path('module', 'autologout') . "/autologout.js");
 
@@ -290,7 +410,7 @@ function autologout_autologout_prevent() {
 
   // Don't include autologout JS checks on ajax callbacks.
   $paths = array(
-    'ajax',
+    'system',
     'autologout_ajax_get_time_left',
     'autologout_ahah_logout',
     'autologout_ahah_set_last',
@@ -325,14 +445,33 @@ function autologout_autologout_refresh_only() {
  * AJAX callback that returns the time remaining for this user is logged out.
  */
 function autologout_ahah_get_remaining_time() {
-  $timeout = _autologout_get_user_timeout();
-  $time_passed = isset($_SESSION['autologout_last']) ? time() - $_SESSION['autologout_last'] : 0;
-  $time_remaining_ms = ($timeout - $time_passed) * 1000;
-  drupal_json_output(array('time' => $time_remaining_ms));
+  $time_remaining_ms = _autologout_get_remaining_time() * 1000;
+
+  // Reset the timer.
+  $markup = autologout_create_timer();
+  $commands = array();
+  $commands[] = ajax_command_replace('#timer', $markup);
+  $commands[] = ajax_command_settings(array('time' => $time_remaining_ms));
+
+  return array('#type' => 'ajax', '#commands' => $commands);
 }
 
 /**
- * Callback that performs the actual logout and redirects the user.
+ * Ajax callback to reset the last access session variable.
+ */
+function autologout_ahah_set_last() {
+  $_SESSION['autologout_last'] = time();
+
+  // Reset the timer.
+  $markup = autologout_create_timer();
+  $commands = array();
+  $commands[] = ajax_command_replace('#timer', $markup);
+
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * AJAX callback that performs the actual logout and redirects the user.
  */
 function autologout_ahah_logout() {
   _autologout_logout();
@@ -340,10 +479,15 @@ function autologout_ahah_logout() {
 }
 
 /**
- * Callback to reset the last access session variable.
+ * Get the time remaining before logout.
+ *
+ * @return int
+ *   Number of seconds remaining.
  */
-function autologout_ahah_set_last() {
-  $_SESSION['autologout_last'] = time();
+function _autologout_get_remaining_time() {
+  $timeout = _autologout_get_user_timeout();
+  $time_passed = isset($_SESSION['autologout_last']) ? time() - $_SESSION['autologout_last'] : 0;
+  return $timeout - $time_passed;
 }
 
 /**
@@ -460,4 +604,40 @@ function _autologout_inactivity_message() {
   if (!empty($message)) {
     drupal_set_message(t($message));
   }
+}
+
+/**
+ * Determine if autologout should be prevented.
+ *
+ * @return bool
+ *   TRUE if there is a reason not to autologout
+ *   the current user on the current page.
+ */
+function _autologout_prevent() {
+  foreach (module_invoke_all('autologout_prevent') as $prevent) {
+    if (!empty($prevent)) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Determine if connection should be refreshed.
+ *
+ * @return bool
+ *   TRUE if something about the current context
+ *   should keep the connection open. FALSE and
+ *   the standard countdown to autologout applies.
+ */
+function _autologout_refresh_only() {
+  foreach (module_invoke_all('autologout_refresh_only') as $module_refresh_only) {
+    if (!empty($module_refresh_only)) {
+      return TRUE;
+      break;
+    }
+  }
+
+  return FALSE;
 }
