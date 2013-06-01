@@ -125,8 +125,6 @@ function autologout_create_block_form() {
   );
 
   $form['timer'] = array(
-    '#type' => 'markup',
-    '#value' => $markup,
     '#markup' => $markup,
   );
 
@@ -439,6 +437,23 @@ function autologout_autologout_refresh_only() {
   // Check to see if an open admin page will keep login alive.
   if (!variable_get('autologout_enforce_admin', FALSE) && path_is_admin(current_path())) {
     return TRUE;
+  }
+}
+
+/**
+ * Implements hook_page_build().
+ *
+ * Add a form element to every page which is used to detect if the page was loaded
+ * from browser cache. This happens when the browser's back button is pressed for
+ * example. The JS will set the value of the hidden input element to 1 after initial
+ * load. If this is 1 on subsequent loads, the page was loaded from cache and an
+ * autologout timeout refresh needs to be triggered.
+ */
+function autologout_page_build(&$page) {
+  if (!_autologout_prevent()) {
+    $page['page_bottom']['autologout'] = array(
+      '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
+    );
   }
 }
 

@@ -238,6 +238,18 @@
         Drupal.ajax['autologout.refresh'].autologoutRefresh(init);
       }
 
+      // Check if the page was loaded via a back button click.
+      var $dirty_bit = $('#autologout-cache-check-bit');
+      if ($dirty_bit.length !== 0) {
+
+        if ($dirty_bit.val() == '1') {
+          // Page was loaded via a back button click, we should
+          // refresh the timer.
+          refresh();
+        }
+
+        $dirty_bit.val('1');
+      }
     }
   };
 })(jQuery);
