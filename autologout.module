@@ -657,3 +657,45 @@ function _autologout_refresh_only() {
 
   return FALSE;
 }
+
+/**
+ * Implement hook_user_login().
+ *
+ * Delete stale sessions for the user on login. This stops
+ * session_limit module thinking the user has reached their
+ * session limit.
+ */
+function autologout_user_login(&$edit, $account) {
+
+  // Cleanup old sessions.
+  $timeout = _autologout_get_user_timeout($account->uid);
+
+  if (empty($timeout)) {
+    // Users that don't get logged have their sessions left.
+    return;
+  }
+
+  $now = time();
+  $timeout_padding = variable_get('autologout_padding', 10);
+  $timestamp = time() - ($timeout + $timeout_padding);
+
+  // Find all stale sessions.
+  $results = db_select('sessions', 's')
+    ->fields('s')
+    ->condition('uid', $account->uid)
+    ->condition('timestamp', $timestamp, '<')
+    ->orderBy('timestamp', 'DESC')
+    ->execute();
+
+  $sids = array();
+  foreach ($results as $session) {
+    $sids[] = $session->sid;
+  }
+
+  if (!empty($sids)) {
+    // Delete stale sessions at login.
+    db_delete('sessions')
+      ->condition('sid', $sids, 'IN')
+      ->execute();
+  }
+}
