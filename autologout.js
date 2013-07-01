@@ -95,7 +95,7 @@
           logout();
         };
 
-        return $('<div> ' +  localSettings.message + '</div>').dialog({
+        return $('<div id="autologout-confirm"> ' +  localSettings.message + '</div>').dialog({
           modal: true,
                closeOnEscape: false,
                width: "auto",
