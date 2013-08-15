@@ -16,6 +16,9 @@
       // interacted with the page.
       var activity;
 
+      // Timer to keep track of activity resets.
+      var activityResetTimer;
+
       // Prevent settings being overriden by ajax callbacks by cloning the settings.
       localSettings = jQuery.extend(true, {}, settings.autologout);
 
@@ -48,6 +51,15 @@
           // When the preventAutologout event fires
           // we set activity to true.
           activity = true;
+
+          // Clear timer if one exists.
+          clearTimeout(activityResetTimer);
+
+          // Set a timer that goes off and resets this activity indicator
+          // after a minute, otherwise sessions never timeout.
+          activityResetTimer = setTimeout(function () {
+            activity = false;
+          }, 60000);
         });
 
         // On pages where the user can be logged out, set the timer to popup
