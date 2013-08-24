@@ -143,7 +143,7 @@
             window.location = localSettings.redirect_url;
           },
           error: function(XMLHttpRequest, textStatus) {
-            if (XMLHttpRequest.status == 403) {
+            if (XMLHttpRequest.status == 403 || XMLHttpRequest.status == 404) {
               window.location = localSettings.redirect_url;
             }
           }
@@ -192,7 +192,10 @@
 
       Drupal.ajax['autologout.getTimeLeft'] = new Drupal.ajax(null, $(document.body), {
         url: Drupal.settings.basePath  + 'autologout_ajax_get_time_left',
-        event: 'autologout.getTimeLeft'
+        event: 'autologout.getTimeLeft',
+        error: function(XMLHttpRequest, textStatus) {
+          // Disable error reporting to the screen.
+        }
       });
 
       /**
@@ -239,7 +242,10 @@
 
       Drupal.ajax['autologout.refresh'] = new Drupal.ajax(null, $(document.body), {
         url: Drupal.settings.basePath  + 'autologout_ahah_set_last',
-        event: 'autologout.refresh'
+        event: 'autologout.refresh',
+        error: function(XMLHttpRequest, textStatus) {
+          // Disable error reporting to the screen.
+        }
       });
 
       function keepAlive() {
