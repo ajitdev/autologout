@@ -66,6 +66,13 @@ function autologout_settings() {
     '#description' => t('Send users to this internal page when they are logged out.'),
   );
 
+  $form['autologout_no_dialog'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do not display the logout dialog'),
+    '#default_value' => variable_get('autologout_no_dialog', FALSE),
+    '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
+  );
+
   $form['autologout_message']  = array(
     '#type' => 'textarea',
     '#title' => t('Message to display in the logout dialog'),

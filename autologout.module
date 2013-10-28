@@ -369,6 +369,7 @@ function autologout_init() {
   $timeout_padding = variable_get('autologout_padding', 10);
   $redirect_url = variable_get('autologout_redirect_url', 'user/login');
   $redirect_query = drupal_get_destination() + array('autologout_timeout' => 1);
+  $no_dialog = variable_get('autologout_no_dialog', FALSE);
   drupal_add_library('system', 'ui.dialog');
 
   // Get all settings JS will need for dialog.
@@ -380,6 +381,7 @@ function autologout_init() {
     'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
     'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Drupal'))),
     'refresh_only' => $refresh_only,
+    'no_dialog' => $no_dialog,
   );
 
   drupal_add_library('system', 'drupal.ajax');

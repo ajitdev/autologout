@@ -68,6 +68,8 @@
       }
 
       function init() {
+        var noDialog = Drupal.settings.autologout.no_dialog;
+
         if (activity) {
           // The user has been active on the page.
           activity = false;
@@ -88,6 +90,11 @@
                 t = setTimeout(init, time);
               }
               else {
+                // Logout user right away without displaying a confirmation dialog.
+                if (noDialog) {
+                  logout();
+                  return;
+                }
                 theDialog = dialog();
               }
           });
