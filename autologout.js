@@ -144,7 +144,7 @@
 
       function logout() {
         $.ajax({
-          url: Drupal.settings.basePath + "autologout_ahah_logout",
+          url: Drupal.settings.basePath + "?q=autologout_ahah_logout",
           type: "POST",
           success: function() {
             window.location = localSettings.redirect_url;
@@ -198,7 +198,7 @@
       };
 
       Drupal.ajax['autologout.getTimeLeft'] = new Drupal.ajax(null, $(document.body), {
-        url: Drupal.settings.basePath  + 'autologout_ajax_get_time_left',
+        url: Drupal.settings.basePath  + '?q=autologout_ajax_get_time_left',
         event: 'autologout.getTimeLeft',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
@@ -248,7 +248,7 @@
       };
 
       Drupal.ajax['autologout.refresh'] = new Drupal.ajax(null, $(document.body), {
-        url: Drupal.settings.basePath  + 'autologout_ahah_set_last',
+        url: Drupal.settings.basePath  + '?q=autologout_ahah_set_last',
         event: 'autologout.refresh',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
