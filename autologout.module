@@ -389,7 +389,7 @@ function autologout_init() {
   if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
     global $base_url;
     $relative_url = str_replace($base_url . '/', '', $_SERVER['HTTP_REFERER']);
-    $settings['redirect_url'] = url($relative_url, array('query' => array('destination' => urlencode($relative_url)), 'autologout_timeout' => 1));
+    $settings['redirect_url'] = url($redirect_url, array('query' => array('destination' => urlencode($relative_url)), 'autologout_timeout' => 1));
   }
 
   drupal_add_library('system', 'drupal.ajax');
