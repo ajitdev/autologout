@@ -384,6 +384,14 @@ function autologout_init() {
     'no_dialog' => $no_dialog,
   );
 
+  // If this is an AJAX request, then the logout redirect url should still be
+  // referring to the page that generated this request
+  if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    global $base_url;
+    $relative_url = str_replace($base_url . '/', '', $_SERVER['HTTP_REFERER']);
+    $settings['redirect_url'] = url($relative_url, array('query' => array('destination' => urlencode($relative_url)), 'autologout_timeout' => 1));
+  }
+
   drupal_add_library('system', 'drupal.ajax');
   drupal_add_js(array('autologout' => $settings), 'setting');
   drupal_add_js(drupal_get_path('module', 'autologout') . "/autologout.js");
