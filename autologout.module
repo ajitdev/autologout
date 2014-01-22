@@ -373,11 +373,11 @@ function autologout_init() {
   drupal_add_library('system', 'ui.dialog');
 
   // Get all settings JS will need for dialog.
-  $msg = t('@msg', array('@msg' => variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?')));
+  $msg = t(variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?'));
   $settings = array(
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
-    'message' => t('@msg', array('@msg' => $msg)),
+    'message' => $msg,
     'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
     'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Drupal'))),
     'refresh_only' => $refresh_only,
