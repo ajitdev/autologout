@@ -374,17 +374,25 @@ function autologout_init() {
   drupal_add_library('system', 'ui.dialog');
 
   // Get all settings JS will need for dialog.
-  $msg = t('@msg', array('@msg' => variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?')));
+  $msg = t(variable_get('autologout_message', 'Your session is about to expire. Do you want to reset it?'));
   $settings = array(
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
-    'message' => t('@msg', array('@msg' => $msg)),
+    'message' => $msg,
     'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
     'title' => t('@name Alert', array('@name' => variable_get('site_name', 'Drupal'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
   );
+
+  // If this is an AJAX request, then the logout redirect url should still be
+  // referring to the page that generated this request
+  if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+    global $base_url;
+    $relative_url = str_replace($base_url . '/', '', $_SERVER['HTTP_REFERER']);
+    $settings['redirect_url'] = url($redirect_url, array('query' => array('destination' => urlencode($relative_url)), 'autologout_timeout' => 1));
+  }
 
   drupal_add_library('system', 'drupal.ajax');
   drupal_add_js(array('autologout' => $settings), 'setting');
