@@ -73,6 +73,13 @@ function autologout_settings() {
     '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
   );
 
+  $form['autologout_use_alt_logout_method'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use alternate logout method'),
+    '#default_value' => variable_get('autologout_use_alt_logout_method', FALSE),
+    '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
+  ); 
+
   $form['autologout_message']  = array(
     '#type' => 'textarea',
     '#title' => t('Message to display in the logout dialog'),
