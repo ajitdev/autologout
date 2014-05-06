@@ -499,6 +499,10 @@ function autologout_ahah_get_remaining_time() {
 function autologout_ahah_set_last() {
   $_SESSION['autologout_last'] = time();
 
+   // Let others act.
+  global $user;
+  module_invoke_all('auto_logout_session_reset', $user);
+
   // Reset the timer.
   $markup = autologout_create_timer();
   $commands = array();
