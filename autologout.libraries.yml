@@ -1,0 +1,8 @@
+autologout:
+  version: VERSION
+  js:
+    js/autologout.js: {}
+
+  dependencies:
+    - core/jquery.ui.dialog
+    - core/drupal.ajax

@@ -2,7 +2,6 @@
 
   Drupal.behaviors.autologout = {
     attach: function(context, settings) {
-
       if (context != document) {
         return;
       }
@@ -20,8 +19,7 @@
       var activityResetTimer;
 
       // Prevent settings being overriden by ajax callbacks by cloning the settings.
-      localSettings = jQuery.extend(true, {}, settings.autologout);
-
+      localSettings = jQuery.extend(true, {}, settings.autologout.defaults);
       if (localSettings.refresh_only) {
         // On pages that cannot be logged out of don't start the logout countdown.
         t = setTimeout(keepAlive, localSettings.timeout);
@@ -68,19 +66,16 @@
       }
 
       function init() {
-        var noDialog = Drupal.settings.autologout.no_dialog;
-
+        var noDialog = settings.autologout.defaults.no_dialog;
         if (activity) {
           // The user has been active on the page.
           activity = false;
           refresh();
         }
         else {
-
           // The user has not been active, ask them if they want to stay logged in
           // and start the logout timer.
           paddingTimer = setTimeout(confirmLogout, localSettings.timeout_padding);
-
           // While the countdown timer is going, lookup the remaining time. If there
           // is more time remaining (i.e. a user is navigating in another tab), then
           // reset the timer for opening the dialog.
@@ -143,23 +138,25 @@
       }
 
       function logout() {
-        if (localSettings.use_alt_logout_method) {
-          window.location = Drupal.settings.basePath + "?q=autologout_ahah_logout";
-        }
-        else {
-          $.ajax({
-            url: Drupal.settings.basePath + "?q=autologout_ahah_logout",
-            type: "POST",
-            success: function() {
+        $.ajax({
+          url: localSettings.basepath + "autologout_ahah_logout",
+          type: "POST",
+          beforeSend: function( xhr ) {
+              xhr.setRequestHeader('X-Requested-With', {
+                toString: function(){
+                  return '';
+                }
+              });
+          },
+          success: function() {
+            window.location = localSettings.redirect_url;
+          },
+          error: function(XMLHttpRequest, textStatus) {
+            if (XMLHttpRequest.status == 403 || XMLHttpRequest.status == 404) {
               window.location = localSettings.redirect_url;
-            },
-            error: function(XMLHttpRequest, textStatus) {
-              if (XMLHttpRequest.status == 403 || XMLHttpRequest.status == 404) {
-                window.location = localSettings.redirect_url;
-              }
             }
-          });
-        }
+          }
+        });
       }
 
       /**
@@ -172,23 +169,20 @@
        */
       Drupal.ajax.prototype.autologoutGetTimeLeft = function(callback) {
         var ajax = this;
-
         if (ajax.ajaxing) {
           return false;
         }
-
         ajax.options.success = function (response, status) {
           if (typeof response == 'string') {
             response = $.parseJSON(response);
           }
-
-          if (typeof response[1].command === 'string' && response[1].command == 'alert') {
+          if (typeof response[0].command === 'string' && response[0].command == 'alert') {
             // In the event of an error, we can assume
             // the user has been logged out.
             window.location = localSettings.redirect_url;
           }
 
-          callback(response[2].settings.time);
+          callback(response[1].settings.time);
 
           // Let Drupal.ajax handle the JSON response.
           return ajax.success(response, status);
@@ -203,7 +197,7 @@
       };
 
       Drupal.ajax['autologout.getTimeLeft'] = new Drupal.ajax(null, $(document.body), {
-        url: Drupal.settings.basePath  + '?q=autologout_ajax_get_time_left',
+        url: localSettings.basepath  + 'autologout_ajax_get_time_left',
         event: 'autologout.getTimeLeft',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
@@ -230,8 +224,7 @@
           if (typeof response == 'string') {
             response = $.parseJSON(response);
           }
-
-          if (typeof response[1].command === 'string' && response[1].command == 'alert') {
+          if (typeof response[0].command === 'string' && response[0].command == 'alert') {
             // In the event of an error, we can assume
             // the user has been logged out.
             window.location = localSettings.redirect_url;
@@ -253,7 +246,7 @@
       };
 
       Drupal.ajax['autologout.refresh'] = new Drupal.ajax(null, $(document.body), {
-        url: Drupal.settings.basePath  + '?q=autologout_ahah_set_last',
+        url: localSettings.basepath  + 'autologout_ahah_set_last',
         event: 'autologout.refresh',
         error: function(XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.

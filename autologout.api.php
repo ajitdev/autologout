@@ -37,17 +37,7 @@ function hook_autologout_prevent() {
 function hook_autologout_refresh_only() {
   // Check to see if an open admin page will keep
   // login alive.
-  if (arg(0) == 'admin' && !variable_get('autologout_enforce_admin', FALSE)) {
+  if (arg(0) == 'admin' && !\Drupal::config('autologout.settings')->get('autologout_enforce_admin')) {
     return TRUE;
   }
 }
-
-/**
- * Let others act when session is extended.
- *
- * Use case: Some applications might be embedding the some other
- * applications via iframe which also requires to extend its sessions.
- */
- function hook_auto_logout_session_reset($user) {
-   $myOtherIframeApplication->resetSession($user->uid);
- }
