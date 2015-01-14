@@ -153,18 +153,18 @@ class AutologuotSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $form_state_values = $form_state->getUserInput();
-    $max_timeout = $form_state_values['autologout_max_timeout'];
+    $input_values = $form_state->getUserInput();
+    $max_timeout = $input_values['autologout_max_timeout'];
     $role_timeout = _autologout_get_role_timeout();
 
     // Validate timeouts for each role.
     foreach (user_roles(TRUE) as $key => $role) {
-      if (empty($form_state_values['autologout_role_' . $key])) {
+      if (empty($input_values['autologout_role_' . $key])) {
         // Don't validate role timeouts for non enabled roles.
         continue;
       }
 
-      $timeout = $form_state_values['autologout_role_' . $key . '_timeout'];
+      $timeout = $input_values['autologout_role_' . $key . '_timeout'];
       $validate = autologout_timeout_validate($timeout, $max_timeout);
 
       if (!$validate) {
@@ -172,7 +172,7 @@ class AutologuotSettingsForm extends ConfigFormBase {
       }
     }
 
-    $timeout = $form_state_values['autologout_timeout'];
+    $timeout = $input_values['autologout_timeout'];
 
     // Validate timeout.
     if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
@@ -186,27 +186,27 @@ class AutologuotSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $form_state_values = $form_state->getUserInput();
+    $input_values = $form_state->getUserInput();
     \Drupal::config('autologout.settings')
-      ->set('autologout_timeout', $form_state_values['autologout_timeout'])
-      ->set('autologout_max_timeout', $form_state_values['autologout_max_timeout'])
-      ->set('autologout_padding', $form_state_values['autologout_padding'])
-      ->set('autologout_role_logout', $form_state_values['autologout_role_logout'])
-      ->set('autologout_redirect_url', $form_state_values['autologout_redirect_url'])
-      ->set('autologout_no_dialog', $form_state_values['autologout_no_dialog'])
-      ->set('autologout_message', $form_state_values['autologout_message'])
-      ->set('autologout_inactivity_message', $form_state_values['autologout_inactivity_message'])
-      ->set('autologout_use_watchdog', $form_state_values['autologout_use_watchdog'])
-      ->set('autologout_enforce_admin', $form_state_values['autologout_enforce_admin'])
+      ->set('autologout_timeout', $input_values['autologout_timeout'])
+      ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
+      ->set('autologout_padding', $input_values['autologout_padding'])
+      ->set('autologout_role_logout', $input_values['autologout_role_logout'])
+      ->set('autologout_redirect_url', $input_values['autologout_redirect_url'])
+      ->set('autologout_no_dialog', $input_values['autologout_no_dialog'])
+      ->set('autologout_message', $input_values['autologout_message'])
+      ->set('autologout_inactivity_message', $input_values['autologout_inactivity_message'])
+      ->set('autologout_use_watchdog', $input_values['autologout_use_watchdog'])
+      ->set('autologout_enforce_admin', $input_values['autologout_enforce_admin'])
       ->save();
-    foreach ($form_state_values['table'] as $user) {
+    foreach ($input_values['table'] as $user) {
       foreach ($user as $key => $value) {
          \Drupal::config('autologout.settings')
         ->set($key, $value)
         ->save();
       }
     }
-    if (isset($form_state_values['autologout_jstimer_format'])) {
+    if (isset($input_values['autologout_jstimer_format'])) {
       \Drupal::config('autologout.settings')
         ->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])
         ->save();
