@@ -14,6 +14,16 @@ use Drupal\Core\Form\FormStateInterface;
  * Provides a settings for autologout modle.
  */
 class AutoLogoutSettingsForm extends ConfigFormBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEditableConfigNames() {
+    return [
+      'autologout.settings',
+    ];
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -25,7 +35,7 @@ class AutoLogoutSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = \Drupal::config('autologout.settings');
+    $config = $this->configFactory->get('autologout.settings');
     $form['autologout_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout value in seconds'),
@@ -187,7 +197,7 @@ class AutoLogoutSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
-    \Drupal::config('autologout.settings')
+    $config = $this->config('autologout.settings')
       ->set('autologout_timeout', $input_values['autologout_timeout'])
       ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
       ->set('autologout_padding', $input_values['autologout_padding'])
@@ -201,13 +211,13 @@ class AutoLogoutSettingsForm extends ConfigFormBase {
       ->save();
     foreach ($input_values['table'] as $user) {
       foreach ($user as $key => $value) {
-         \Drupal::config('autologout.settings')
+         $this->config('autologout.settings')
         ->set($key, $value)
         ->save();
       }
     }
     if (isset($input_values['autologout_jstimer_format'])) {
-      \Drupal::config('autologout.settings')
+      $this->config('autologout.settings')
         ->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])
         ->save();
     }
