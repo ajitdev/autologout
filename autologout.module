@@ -21,48 +21,6 @@ function autologout_permission() {
   );
 }
 
-
-// /**
-//  * Implements hook_block_info().
-//  */
-// function autologout_block_info() {
-//   $blocks = array();
-
-//   $blocks['info'] = array(
-//     'info' => t('Automated Logout info'),
-//   );
-
-//   return $blocks;
-// }
-
-// /**
-//  * Implements hook_block_view().
-//  */
-// function autologout_block_view($delta = '') {
-//   $block = array();
-
-//   if (_autologout_prevent()) {
-//     // Don't display the block if the user is not going
-//     // to be logged out on this page.
-//     return;
-//   }
-
-//   $block['subject'] = t('Autologout warning block');
-
-//   if (_autologout_refresh_only()) {
-//     $block['content'] = t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
-//   }
-//   elseif (module_exists('jstimer') && module_exists('jst_timer')) {
-//     $block['content'] = array(drupal_get_form('autologout_create_block_form'));
-//   }
-//   else {
-//     $timeout = (int) variable_get('autologout_timeout', 1800);
-//     $block['content'] = t('You will be logged out in !time if this page is not refreshed before then.', array('!time' => format_interval($timeout)));
-//   }
-
-//   return $block;
-// }
-
 // /**
 //  * Drupal reset timer form on timer block.
 //  */
