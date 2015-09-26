@@ -35,7 +35,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('autologout.settings');
+    $config = $this->config('autologout.settings');
     $form['autologout_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout value in seconds'),
@@ -165,7 +165,6 @@ class AutologoutSettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
     $max_timeout = $input_values['autologout_max_timeout'];
-    $role_timeout = _autologout_get_role_timeout();
 
     // Validate timeouts for each role.
     foreach (user_roles(TRUE) as $key => $role) {
@@ -197,8 +196,8 @@ class AutologoutSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
-    $config = $this->config('autologout.settings')
-      ->set('autologout_timeout', $input_values['autologout_timeout'])
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
+    $config->set('autologout_timeout', $input_values['autologout_timeout'])
       ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
       ->set('autologout_padding', $input_values['autologout_padding'])
       ->set('autologout_role_logout', $input_values['autologout_role_logout'])
@@ -211,15 +210,11 @@ class AutologoutSettingsForm extends ConfigFormBase {
       ->save();
     foreach ($input_values['table'] as $user) {
       foreach ($user as $key => $value) {
-         $this->config('autologout.settings')
-        ->set($key, $value)
-        ->save();
+        $config->set($key, $value)->save();
       }
     }
     if (isset($input_values['autologout_jstimer_format'])) {
-      $this->config('autologout.settings')
-        ->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])
-        ->save();
+      $config->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])->save();
     }
 
     parent::submitForm($form, $form_state);
