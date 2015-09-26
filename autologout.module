@@ -48,7 +48,7 @@ function autologout_help($path, $arg) {
  *  Return TRUE or FALSE
  */
 function autologout_timeout_validate($timeout, $max_timeout = NULL) {
-  $validate = FALSE;
+  $validate = TRUE;
   if (is_null($max_timeout)) {
     $max_timeout = \Drupal::config('autologout.settings')->get('autologout_max_timeout');
   }
