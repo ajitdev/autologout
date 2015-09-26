@@ -13,7 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Provides a settings for autologout modle.
  */
-class AutoLogoutSettingsForm extends ConfigFormBase {
+class AutologoutSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
