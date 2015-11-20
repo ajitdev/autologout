@@ -6,3 +6,4 @@ autologout:
   dependencies:
     - core/jquery.ui.dialog
     - core/drupal.ajax
+    - core/drupalSettings

@@ -35,7 +35,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = $this->configFactory->get('autologout.settings');
+    $config = $this->config('autologout.settings');
     $form['autologout_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout value in seconds'),
@@ -87,6 +87,12 @@ class AutologoutSettingsForm extends ConfigFormBase {
       '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
     );
 
+    $form['autologout_use_alt_logout_method'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use alternate logout method'),
+      '#default_value' => $config->get('autologout_use_alt_logout_method'),
+      '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
+    );
     $form['autologout_message']  = array(
       '#type' => 'textarea',
       '#title' => t('Message to display in the logout dialog'),
@@ -165,7 +171,6 @@ class AutologoutSettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
     $max_timeout = $input_values['autologout_max_timeout'];
-    $role_timeout = _autologout_get_role_timeout();
 
     // Validate timeouts for each role.
     foreach (user_roles(TRUE) as $key => $role) {
@@ -197,13 +202,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
-    $config = $this->config('autologout.settings')
-      ->set('autologout_timeout', $input_values['autologout_timeout'])
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
+    $config->set('autologout_timeout', $input_values['autologout_timeout'])
       ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
       ->set('autologout_padding', $input_values['autologout_padding'])
       ->set('autologout_role_logout', $input_values['autologout_role_logout'])
       ->set('autologout_redirect_url', $input_values['autologout_redirect_url'])
       ->set('autologout_no_dialog', $input_values['autologout_no_dialog'])
+      ->set('autologout_use_alt_logout_method', $input_values['autologout_use_alt_logout_method'])
       ->set('autologout_message', $input_values['autologout_message'])
       ->set('autologout_inactivity_message', $input_values['autologout_inactivity_message'])
       ->set('autologout_use_watchdog', $input_values['autologout_use_watchdog'])
@@ -211,15 +217,11 @@ class AutologoutSettingsForm extends ConfigFormBase {
       ->save();
     foreach ($input_values['table'] as $user) {
       foreach ($user as $key => $value) {
-         $this->config('autologout.settings')
-        ->set($key, $value)
-        ->save();
+        $config->set($key, $value)->save();
       }
     }
     if (isset($input_values['autologout_jstimer_format'])) {
-      $this->config('autologout.settings')
-        ->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])
-        ->save();
+      $config->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])->save();
     }
 
     parent::submitForm($form, $form_state);

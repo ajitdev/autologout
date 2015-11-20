@@ -2,6 +2,8 @@
 
   Drupal.behaviors.autologout = {
     attach: function(context, settings) {
+        alert('enabled');
+        console.log('yay in js');
       if (context != document) {
         return;
       }
