@@ -14,7 +14,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AnonymousUserSession;
 
-
 /**
  * Get the timer HTML markup.
  *
@@ -74,7 +73,6 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
 function autologout_form_user_form_alter(&$form, $form_state) {
   $user_timeout = _autologout_get_user_timeout();
   $user = Drupal::currentUser();
-
   $current_uid = $user->id();
   $userid = $form_state->getFormObject()->getEntity()->id();
   $access = FALSE;
@@ -117,7 +115,6 @@ function _autologout_user_uid_timeout_validate($element, FormStateInterface $for
 /**
  * Handle submission of timeout threshold in user/edit.
  */
-
 function autologout_user_profile_submit(&$form, FormStateInterface $form_state) {
   $user = \Drupal::currentUser();
   $current_uid = $user->id();
@@ -371,11 +368,11 @@ function _autologout_logout() {
 
   if (\Drupal::config('autologout.settings')->get('autologout_use_watchdog')) {
     \Drupal::logger('user')->info('Session automatically closed for %name by autologout.', array('%name' => $user->getUsername()));
-
   }
 
   // Destroy the current session.
   \Drupal::moduleHandler()->invokeAll('user_logout', array($user));
+
   session_destroy();
 
   // Load the anonymous user.
