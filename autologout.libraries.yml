@@ -1,7 +1,7 @@
-autologout:
+drupal.autologout:
   version: VERSION
   js:
-    js/autologout.js: {}
+    js/autologout.js: { weight: -2 }
 
   dependencies:
     - core/jquery.ui.dialog
