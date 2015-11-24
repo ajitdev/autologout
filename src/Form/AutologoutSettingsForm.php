@@ -7,6 +7,7 @@
 
 namespace Drupal\autologout\Form;
 
+use Drupal;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -67,7 +68,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_role_logout'] = array(
       '#type' => 'checkbox',
       '#title' => t('Role Timeout'),
-      '#default_value' => $config->get('autologout_role_logout'),
+      '#default_value' => \Drupal::config('autologout.settings')->get('autologout_role_logout'),
       '#weight' => -4,
       '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
     );
@@ -83,14 +84,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_no_dialog'] = array(
       '#type' => 'checkbox',
       '#title' => t('Do not display the logout dialog'),
-      '#default_value' => $config->get('autologout_no_dialog'),
+      '#default_value' => \Drupal::config('autologout.settings')->get('autologout_no_dialog'),
       '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
     );
 
     $form['autologout_use_alt_logout_method'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use alternate logout method'),
-      '#default_value' => $config->get('autologout_use_alt_logout_method'),
+      '#default_value' => Drupal::config('autologout.settings')->get('user_default_enabled'),
       '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
     );
     $form['autologout_message']  = array(
@@ -202,13 +203,16 @@ class AutologoutSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
+    if(empty($input_values['autologout_no_dialog'])) {
+      $no_dialog = 0;
+    }
     $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('autologout_timeout', $input_values['autologout_timeout'])
       ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
       ->set('autologout_padding', $input_values['autologout_padding'])
       ->set('autologout_role_logout', $input_values['autologout_role_logout'])
       ->set('autologout_redirect_url', $input_values['autologout_redirect_url'])
-      ->set('autologout_no_dialog', $input_values['autologout_no_dialog'])
+      ->set('autologout_no_dialog', $no_dialog)
       ->set('autologout_use_alt_logout_method', $input_values['autologout_use_alt_logout_method'])
       ->set('autologout_message', $input_values['autologout_message'])
       ->set('autologout_inactivity_message', $input_values['autologout_inactivity_message'])

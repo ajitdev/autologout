@@ -453,8 +453,6 @@ function _autologout_refresh_only() {
  * session limit.
  */
 function autologout_user_login($account) {
-  echo "<pre>";print_r($account->id()); echo"</pre>";
-
   // Cleanup old sessions.
   $timeout = _autologout_get_user_timeout($account->id());
 
@@ -508,14 +506,12 @@ function autologout_page_attachments(array &$page) {
     'no_dialog' => 0,
     'use_alt_logout_method' => $use_alt_logout_method,
   );
-//$page['#attached']['library'][] = 'contextual/drupal.contextual-links';
   $page['#attached']['library'][] = 'autologout/drupal.autologout';
   $page['#attached']['drupalSettings']['autologout'] = $settings;
   // We need a backup plan if JS is disabled.
-  echo"<pre>";print_r($_SESSION);echo"</pre>";
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
 //    // If time since last access is > than the timeout + padding, log them out.
-    if (($now - $_SESSION['autologout_last']) <= ($timeout + (int) $timeout_padding)) {
+    if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
       _autologout_logout();
 
       // User has changed so force Drupal to remake decisions based on user.
