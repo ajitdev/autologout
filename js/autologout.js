@@ -1,7 +1,7 @@
 (function ($) {
 
   Drupal.behaviors.autologout = {
-    attach: function(context, settings) {
+    attach: function(context, settings,drupalSettings) {
       if (context != document) {
         return;
       }
@@ -66,7 +66,7 @@
       }
 
       function init() {
-        var noDialog = settings.autologout.defaults.no_dialog;
+        var noDialog = settings.autologout.no_dialog;
         if (activity) {
           // The user has been active on the page.
           activity = false;

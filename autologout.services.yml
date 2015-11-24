@@ -1,0 +1,5 @@
+services:
+  autologout_event_subscriber:
+    class: Drupal\autologout\EventSubscriber\AutologoutSubscriber
+    tags:
+      - {name: event_subscriber}
