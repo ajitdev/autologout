@@ -91,7 +91,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_use_alt_logout_method'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use alternate logout method'),
-      '#default_value' => Drupal::config('autologout.settings')->get('user_default_enabled'),
+      '#default_value' => Drupal::config('autologout.settings')->get('autologout_use_alt_logout_method'),
       '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
     );
     $form['autologout_message']  = array(
@@ -120,7 +120,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_enforce_admin'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enforce auto logout on admin pages'),
-      '#default_value' => $config->get('autologout_enforce_admin'),
+      '#default_value' => Drupal::config('autologout.settings')->get('autologout_enforce_admin'),
       '#description' => t('If checked, then users will be automatically logged out when administering the site.'),
     );
 
@@ -203,21 +203,38 @@ class AutologoutSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
+    $autologout_no_dialog = 1;
+    $autologout_role_logout = 1;
+    $autologout_use_watchdog = 1;
+    $autologout_enforce_admin = 1;
+    $autologout_use_alt_logout_method = 1;
     if(empty($input_values['autologout_no_dialog'])) {
-      $no_dialog = 0;
+      $autologout_no_dialog = 0;
+    }
+    if(empty($input_values['autologout_role_logout'])) {
+      $autologout_role_logout = 0;
+    }
+    if(empty($input_values['autologout_use_watchdog'])) {
+      $autologout_use_watchdog = 0;
+    }
+    if(empty($input_values['autologout_enforce_admin'])) {
+      $autologout_enforce_admin = 0;
+    }
+    if(empty($input_values['autologout_use_alt_logout_method'])) {
+      $autologout_use_alt_logout_method = 0;
     }
     $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('autologout_timeout', $input_values['autologout_timeout'])
       ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
       ->set('autologout_padding', $input_values['autologout_padding'])
-      ->set('autologout_role_logout', $input_values['autologout_role_logout'])
+      ->set('autologout_role_logout', $autologout_role_logout)
       ->set('autologout_redirect_url', $input_values['autologout_redirect_url'])
-      ->set('autologout_no_dialog', $no_dialog)
-      ->set('autologout_use_alt_logout_method', $input_values['autologout_use_alt_logout_method'])
+      ->set('autologout_no_dialog', $autologout_no_dialog)
+      ->set('autologout_use_alt_logout_method', $autologout_use_alt_logout_method)
       ->set('autologout_message', $input_values['autologout_message'])
       ->set('autologout_inactivity_message', $input_values['autologout_inactivity_message'])
-      ->set('autologout_use_watchdog', $input_values['autologout_use_watchdog'])
-      ->set('autologout_enforce_admin', $input_values['autologout_enforce_admin'])
+      ->set('autologout_use_watchdog', $autologout_use_watchdog)
+      ->set('autologout_enforce_admin', $autologout_enforce_admin)
       ->save();
     foreach ($input_values['table'] as $user) {
       foreach ($user as $key => $value) {
