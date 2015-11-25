@@ -4,6 +4,7 @@ use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Routing\AdminContext;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\Entity\User;
 
 
 /**
@@ -102,7 +103,7 @@ function autologout_form_user_form_alter(&$form, $form_state) {
  * Form validation.
  */
 function _autologout_user_uid_timeout_validate($element, FormStateInterface $form_state) {
-  $max_timeout = \Drupal::config('autologout.settings')->get('autologout_max_timeout');
+  $max_timeout = Drupal::config('autologout.settings')->get('autologout_max_timeout');
   $timeout = $element['#value'];
 
   // Set error if it has a value that isnt strictly a number between 60 and max.
@@ -116,7 +117,7 @@ function _autologout_user_uid_timeout_validate($element, FormStateInterface $for
  * Handle submission of timeout threshold in user/edit.
  */
 function autologout_user_profile_submit(&$form, FormStateInterface $form_state) {
-  $user = \Drupal::currentUser();
+  $user = Drupal::currentUser();
   $current_uid = $user->id();
   $userid = $form_state->getFormObject()->getEntity()->id();
   $access = FALSE;
@@ -128,7 +129,7 @@ function autologout_user_profile_submit(&$form, FormStateInterface $form_state) 
   // Access is reused here as a security measure. Not only will the element not
   // display but wont sumbit without access.
   if ($access) {
-    \Drupal::configFactory()->getEditable('autologout.settings')->set('autologout_user_' . $userid, $form_state->getValue('autologout_user_' . $userid))->save();
+    Drupal::configFactory()->getEditable('autologout.settings')->set('autologout_user_' . $userid, $form_state->getValue('autologout_user_' . $userid))->save();
   }
 }
 
@@ -170,7 +171,7 @@ function autologout_autologout_prevent() {
 function autologout_autologout_refresh_only() {
   $url = Url::fromRoute('<current>');
   $route = explode('/',$url->toString());
-  if (!Drupal::config('autologout.settings')->get('autologout_enforce_admin') && \Drupal::service('router.admin_context')->isAdminRoute(\Drupal::routeMatch()->getRouteObject())) {
+  if (!Drupal::config('autologout.settings')->get('autologout_enforce_admin') && Drupal::service('router.admin_context')->isAdminRoute(Drupal::routeMatch()->getRouteObject())) {
     return TRUE;
   }
 }
@@ -239,7 +240,7 @@ function autologout_page_build(&$page) {
         $theme = NULL;
         $theme_key = NULL;
         // menu_set_custom_theme();
-        \Drupal::theme()->getActiveTheme();
+        Drupal::theme()->getActiveTheme();
         _autologout_inactivity_message();
     }
     else {
@@ -324,7 +325,7 @@ function _autologout_get_user_timeout($uid = NULL) {
     $user = Drupal::currentUser();
   }
   else {
-    $user = user_load($uid);
+    $user = User::load($uid);
   }
 
   if ($user->id() == 0) {
@@ -364,14 +365,14 @@ function _autologout_get_user_timeout($uid = NULL) {
  * Helper to perform the actual logout.
  */
 function _autologout_logout() {
-  $user = \Drupal::currentUser();
+  $user = Drupal::currentUser();
 
-  if (\Drupal::config('autologout.settings')->get('autologout_use_watchdog')) {
-    \Drupal::logger('user')->info('Session automatically closed for %name by autologout.', array('%name' => $user->getUsername()));
+  if (Drupal::config('autologout.settings')->get('autologout_use_watchdog')) {
+    Drupal::logger('user')->info('Session automatically closed for %name by autologout.', array('%name' => $user->getUsername()));
   }
 
   // Destroy the current session.
-  \Drupal::moduleHandler()->invokeAll('user_logout', array($user));
+  Drupal::moduleHandler()->invokeAll('user_logout', array($user));
 
   session_destroy();
 
@@ -415,7 +416,7 @@ function _autologout_inactivity_message() {
  *   the current user on the current page.
  */
 function _autologout_prevent() {
-  foreach (\Drupal::moduleHandler()->invokeAll('autologout_prevent') as $prevent) {
+  foreach (Drupal::moduleHandler()->invokeAll('autologout_prevent') as $prevent) {
     if (!empty($prevent)) {
       return TRUE;
     }
@@ -434,7 +435,7 @@ function _autologout_prevent() {
  *   the standard countdown to autologout applies.
  */
 function _autologout_refresh_only() {
-  foreach (\Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
+  foreach (Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
     if (!empty($module_refresh_only)) {
       return TRUE;
       break;
@@ -461,11 +462,11 @@ function autologout_user_login($account) {
     return;
   }
 
-  $timeout_padding = \Drupal::config('autologout.settings')->get('autologout_padding');
+  $timeout_padding = Drupal::config('autologout.settings')->get('autologout_padding');
   $timestamp = REQUEST_TIME - ($timeout + $timeout_padding);
 
   // Find all stale sessions.
-  $database = \Drupal::database();
+  $database = Drupal::database();
   $sids = $database->select('sessions', 's')
     ->fields('s', array('sid'))
     ->condition('uid', $account->id())
@@ -489,18 +490,18 @@ function autologout_page_attachments(array &$page) {
   $refresh_only = _autologout_refresh_only();
   $now = time();
   $timeout = _autologout_get_user_timeout();
-  $timeout_padding = \Drupal::config('autologout.settings')->get('autologout_padding');
-  $redirect_url = \Drupal::config('autologout.settings')->get('autologout_redirect_url');
- // $redirect_query = Url::fromRoute('route_name', [], ['query' => \Drupal::destination()->getAsArray()] + array('autologout_timeout' => 1));
-  $no_dialog = \Drupal::config('autologout.settings')->get('autologout_no_dialog');
-  $use_alt_logout_method = \Drupal::config('autologout.settings')->get('autologout_use_alt_logout_method');
-  $msg = \Drupal::config('autologout.settings')->get('autologout_message');
+  $timeout_padding = Drupal::config('autologout.settings')->get('autologout_padding');
+  $redirect_url = Drupal::config('autologout.settings')->get('autologout_redirect_url');
+ // $redirect_query = Url::fromRoute('route_name', [], ['query' => Drupal::destination()->getAsArray()] + array('autologout_timeout' => 1));
+  $no_dialog = Drupal::config('autologout.settings')->get('autologout_no_dialog');
+  $use_alt_logout_method = Drupal::config('autologout.settings')->get('autologout_use_alt_logout_method');
+  $msg = Drupal::config('autologout.settings')->get('autologout_message');
 
   $settings = array(
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
     'message' => $msg,
-    //'redirect_url' => \Drupal::l($redirect_url, array('query' => $redirect_query)),
+    //'redirect_url' => Drupal::l($redirect_url, array('query' => $redirect_query)),
     'title' => ('Drupal autologout'),
     'refresh_only' => $refresh_only,
     'no_dialog' => 0,
