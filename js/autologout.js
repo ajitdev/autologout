@@ -299,4 +299,4 @@
       }
     }
   };
-})(jQuery);
+})(jQuery, Drupal);
