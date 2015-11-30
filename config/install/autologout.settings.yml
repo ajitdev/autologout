@@ -1,9 +1,9 @@
-autologout_timeout: 60
+autologout_timeout: 1800
 autologout_max_timeout: 172800
 autologout_padding: 10
 autologout_role_logout: FALSE
-autologout_redirect_url: 'user/login'
-autologout_no_dialog: 1
+autologout_redirect_url: '/user/login'
+autologout_no_dialog: 0
 autologout_message: 'Your session is about to expire. Do you want to reset it?'
 autologout_inactivity_message: 'You have been logged out due to inactivity.'
 autologout_enforce_admin: FALSE
