@@ -1,19 +1,15 @@
 <?php
+
 use Drupal;
 use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\Request;
-use Drupal\Core\Routing\AdminContext;
-use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\user\Entity\User;
-
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AnonymousUserSession;
 
 /**
  * @file
- * Used to automagically log out a user after a preset time.
+ * Used to automatically log out a user after a preset time.
  */
-
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AnonymousUserSession;
 
 /**
  * Get the timer HTML markup.
@@ -33,7 +29,7 @@ function autologout_help($path, $arg) {
   $message = NULL;
 
   switch ($path) {
-    case 'admin/help#autologout' :
+    case 'admin/help#autologout':
       $message = '<p>' . t("This module allows you to force site users to be logged out after a given amount of time due to inactivity after first being presented with a confirmation dialog. Your current logout threshold is %seconds seconds.", array('%seconds' => $seconds)) . '</p>';
       break;
   }
@@ -46,13 +42,13 @@ function autologout_help($path, $arg) {
  * to centrilize and stop repeated code. Hard coded min, configurable max.
  *
  * @param int $timeout
- *   The timeout value in seconds to validate
+ *   The timeout value in seconds to validate.
  * @param int $max_timeout
  *   (optional) A maximum timeout. If not set the current system
- *   default maximum is used.
+ *    default maximum is used.
  *
  * @return bool
- *  Return TRUE or FALSE
+ *    Return TRUE or FALSE
  */
 function autologout_timeout_validate($timeout, $max_timeout = NULL) {
   $validate = TRUE;
@@ -148,7 +144,7 @@ function autologout_autologout_prevent() {
     'autologout_ahah_set_last',
   );
   $url = Url::fromRoute('<current>');
-  $path_args = explode('/',$url->toString());
+  $path_args = explode('/', $url->toString());
   if (in_array($path_args[1], $paths)) {
     return TRUE;
   }
@@ -170,7 +166,7 @@ function autologout_autologout_prevent() {
  */
 function autologout_autologout_refresh_only() {
   $url = Url::fromRoute('<current>');
-  $route = explode('/',$url->toString());
+  $route = explode('/', $url->toString());
   if (!Drupal::config('autologout.settings')->get('autologout_enforce_admin') && Drupal::service('router.admin_context')->isAdminRoute(Drupal::routeMatch()->getRouteObject())) {
     return TRUE;
   }
@@ -178,7 +174,7 @@ function autologout_autologout_refresh_only() {
 
 
 /**
- * Implements hook_page_build().
+ * Implements hook_page_attachments().
  *
  * Add a form element to every page which is used to detect if the page was
  * loaded from browser cache. This happens when the browser's back button is
@@ -186,30 +182,33 @@ function autologout_autologout_refresh_only() {
  * to 1 after initial load. If this is 1 on subsequent loads, the page was
  * loaded from cache and an autologout timeout refresh needs to be triggered.
  */
-function autologout_page_build(&$page) {
+function autologout_page_attachments(array &$page) {
   $user = Drupal::currentUser();
-  $userid = $user->id();
-  if (empty($userid)) {
+  $uid = $user->id();
+  if ($uid == 0) {
     if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
       _autologout_inactivity_message();
     }
     return;
   }
+
+  // Check if JS should be included on this request.
   if (_autologout_prevent()) {
     return;
   }
-  $refresh_only = _autologout_refresh_only();
-  if (!_autologout_prevent()) {
-    $page['page_bottom']['autologout'] = array(
-      '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
-    );
-  }
 
+  // Check if anything wants to be refresh only. This URL would
+  // include the javascript but will keep the login alive whilst
+  // that page is opened.
+  $refresh_only = _autologout_refresh_only();
+
+  $now = REQUEST_TIME;
   $timeout = _autologout_get_user_timeout();
   $timeout_padding = Drupal::config('autologout.settings')->get('autologout_padding');
   $redirect_url = Drupal::config('autologout.settings')->get('autologout_redirect_url');
-  $redirect_query = drupal_get_destination() + array('autologout_timeout' => 1);
+  $redirect_query = Drupal::service('redirect.destination')->getAsArray() + array('autologout_timeout' => 1);
   $no_dialog = Drupal::config('autologout.settings')->get('autologout_no_dialog');
+  $use_alt_logout_method = Drupal::config('autologout.settings')->get('autologout_use_alt_logout_method');
 
   // Get all settings JS will need for dialog.
   $msg = t('@msg', array('@msg' => Drupal::config('autologout.settings')->get('autologout_message')));
@@ -217,31 +216,28 @@ function autologout_page_build(&$page) {
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
-    'redirect_url' => url($redirect_url, array('query' => $redirect_query)),
+    'redirect_url' => Url::fromUserInput('/' . $redirect_url, array('query' => $redirect_query))->toString(),
     'title' => t('@name Alert', array('@name' => Drupal::config('autologout.settings')->get('site_name'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
-    'basepath' => '/',
+    'use_alt_logout_method' => $use_alt_logout_method,
   );
 
   autologaut_attach_js($page, $settings, TRUE);
-
-  $now = time();
 
   // We need a backup plan if JS is disabled.
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
     // If time since last access is > than the timeout + padding, log them out.
     if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
       _autologout_logout();
-
       // User has changed so force Drupal to remake decisions based on user.
-        global $theme, $theme_key;
-        drupal_static_reset();
-        $theme = NULL;
-        $theme_key = NULL;
-        // menu_set_custom_theme();
-        Drupal::theme()->getActiveTheme();
-        _autologout_inactivity_message();
+      global $theme, $theme_key;
+      drupal_static_reset();
+      $theme = NULL;
+      $theme_key = NULL;
+      // menu_set_custom_theme();
+      Drupal::theme()->getActiveTheme();
+      _autologout_inactivity_message();
     }
     else {
       $_SESSION['autologout_last'] = $now;
@@ -252,27 +248,30 @@ function autologout_page_build(&$page) {
   }
 }
 
-
+/**
+ * Implements hook_page_bottom().
+ */
+function autologout_page_bottom() {
+  if (!_autologout_prevent()) {
+    $page_bottom['autologout'] = [
+      '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
+    ];
+  }
+}
 /**
  * Adds the necessary js and libraries.
  *
  * @param array $element
- *        The renderable array element to #attach the js to
+ *        The renderable array element to #attach the js to.
  *
  * @param array $settings
+ *        The JS Settings.
  *
- * @param boolean $every_page
+ * @param bool $every_page
  */
 function autologaut_attach_js(&$element, $settings, $every_page = FALSE) {
-  $element['#attached']['library'][] = 'core/jquery.ui.dialog';;
-  $element['#attached']['library'][] = 'core/drupal.ajax';
-  $element['#attached']['js'][] = array(
-    'data' => array('autologout' => array(
-      'defaults' => $settings,
-    )),
-    'type' => 'setting',
-  );
-  $element['#attached']['js'][drupal_get_path('module', 'autologout') . '/js/autologout.js'] = array('every_page' => $every_page);
+  $element['#attached']['drupalSettings']['autologout'] = $settings;
+  $element['#attached']['library'][] = 'autologout/drupal.autologout';
 }
 
 
@@ -327,6 +326,8 @@ function _autologout_get_user_timeout($uid = NULL) {
   else {
     $user = User::load($uid);
   }
+
+  $uid = $user->id();
 
   if ($user->id() == 0) {
     // Anonymous doesn't get logged out.
@@ -438,7 +439,6 @@ function _autologout_refresh_only() {
   foreach (Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
     if (!empty($module_refresh_only)) {
       return TRUE;
-      break;
     }
   }
 
@@ -480,48 +480,5 @@ function autologout_user_login($account) {
     $database->delete('sessions')
       ->condition('sid', $sids, 'IN')
       ->execute();
-  }
-}
-/**
- * Implements hook_page_attachments().
- */
-function autologout_page_attachments(array &$page) {
-
-  $refresh_only = _autologout_refresh_only();
-  $now = time();
-  $timeout = _autologout_get_user_timeout();
-  $timeout_padding = Drupal::config('autologout.settings')->get('autologout_padding');
-  $redirect_url = Drupal::config('autologout.settings')->get('autologout_redirect_url');
- // $redirect_query = Url::fromRoute('route_name', [], ['query' => Drupal::destination()->getAsArray()] + array('autologout_timeout' => 1));
-  $no_dialog = Drupal::config('autologout.settings')->get('autologout_no_dialog');
-  $use_alt_logout_method = Drupal::config('autologout.settings')->get('autologout_use_alt_logout_method');
-  $msg = Drupal::config('autologout.settings')->get('autologout_message');
-
-  $settings = array(
-    'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
-    'timeout_padding' => $timeout_padding * 1000,
-    'message' => $msg,
-    //'redirect_url' => Drupal::l($redirect_url, array('query' => $redirect_query)),
-    'title' => ('Drupal autologout'),
-    'refresh_only' => $refresh_only,
-    'no_dialog' => 0,
-    'use_alt_logout_method' => $use_alt_logout_method,
-  );
-  $page['#attached']['library'][] = 'autologout/drupal.autologout';
-  $page['#attached']['drupalSettings']['autologout'] = $settings;
-  // We need a backup plan if JS is disabled.
-  if (!$refresh_only && isset($_SESSION['autologout_last'])) {
-//    // If time since last access is > than the timeout + padding, log them out.
-    if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
-      _autologout_logout();
-
-      // User has changed so force Drupal to remake decisions based on user.
-    }
-    else {
-      $_SESSION['autologout_last'] = $now;
-    }
-  }
-  else {
-    $_SESSION['autologout_last'] = $now;
   }
 }

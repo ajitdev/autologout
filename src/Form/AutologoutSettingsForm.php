@@ -28,7 +28,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormID() {
+  public function getFormId() {
     return 'autologout_settings';
   }
 
@@ -145,8 +145,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     );
 
     foreach (user_roles(TRUE) as $key => $role) {
-
-     $form['table'][] = array(
+      $form['table'][] = array(
         'autologout_role_' . $key => array(
           '#type' => 'checkbox',
           '#default_value' => $config->get('autologout_role_' . $key),
@@ -160,7 +159,6 @@ class AutologoutSettingsForm extends ConfigFormBase {
           '#size' => 8,
         ),
       );
-
     }
 
     return parent::buildForm($form, $form_state);
@@ -203,7 +201,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $input_values = $form_state->getUserInput();
-    if(empty($input_values['autologout_no_dialog'])) {
+    if (empty($input_values['autologout_no_dialog'])) {
       $no_dialog = 0;
     }
     $config = \Drupal::configFactory()->getEditable('autologout.settings');
