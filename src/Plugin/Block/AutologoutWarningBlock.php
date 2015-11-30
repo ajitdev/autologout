@@ -9,9 +9,6 @@ namespace Drupal\autologout\Plugin\Block;
 
 use Drupal;
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Datetime\DateFormatter;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Datetime\DateFormatterInterface;
 
 /**
  * Provides an 'Automated Logout info' block.
@@ -32,11 +29,11 @@ class AutologoutWarningBlock extends BlockBase {
     $return = array();
     if (Drupal::moduleHandler()->moduleExists('jstimer')) {
       if (!Drupal::moduleHandler()->moduleExists('jst_timer')) {
-        drupal_set_message($this->t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'),'error');
+        drupal_set_message($this->t('The "Widget: timer" module must also be enabled for the dynamic countdown to work in the automated logout block.'), 'error');
       }
 
-      if (Drupal::config('autologout.settings')->get('jstimer_js_load_option',0) != 1) {
-        drupal_set_message($this->t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."),'error');
+      if (Drupal::config('autologout.settings')->get('jstimer_js_load_option', 0) != 1) {
+        drupal_set_message($this->t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
       }
     }
 
