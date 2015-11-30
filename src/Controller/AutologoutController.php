@@ -8,12 +8,12 @@ namespace Drupal\autologout\Controller;
 
 use Drupal\Core\Ajax;
 use Drupal\Core\Ajax\AjaxResponse;
-use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
+use Drupal\Core\Controller\ControllerBase;
 
 /**
  * Example page controller.
  */
-class AutologoutController {
+class AutologoutController extends ControllerBase {
 
   /**
    * AJAX callback that performs the actual logout and redirects the user.
