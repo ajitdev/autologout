@@ -216,7 +216,7 @@ function autologout_page_attachments(array &$page) {
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
-    'redirect_url' => Url::fromUserInput('/' . $redirect_url, array('query' => $redirect_query))->toString(),
+    'redirect_url' => Url::fromUserInput($redirect_url, array('query' => $redirect_query))->toString(),
     'title' => t('@name Alert', array('@name' => Drupal::config('autologout.settings')->get('site_name'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,

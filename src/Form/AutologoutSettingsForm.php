@@ -193,6 +193,13 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $form_state->setErrorByName('autologout_timeout', t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
     }
 
+    $autologout_redirect_url = $input_values['autologout_redirect_url'];
+
+    // Validate redirect url.
+    if (strpos($autologout_redirect_url, '/') !== 0) {
+      $form_state->setErrorByName('autologout_redirect_url', t("The user-entered string :autologout_redirect_url must begin with a '/'", array(':autologout_redirect_url' => $autologout_redirect_url)));
+    }
+
     parent::validateForm($form, $form_state);
   }
 
