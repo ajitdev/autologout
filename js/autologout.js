@@ -1,7 +1,7 @@
 (function ($) {
 
   Drupal.behaviors.autologout = {
-    attach: function(context, settings,drupalSettings) {
+    attach: function(context, settings, drupalSettings) {
       if (context != document) {
         return;
       }
