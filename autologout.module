@@ -364,7 +364,6 @@ function _autologout_get_user_timeout($uid = NULL) {
  * Helper to perform the actual logout.
  */
 function _autologout_logout() {
-
   $user = Drupal::currentUser();
 
   if (Drupal::config('autologout.settings')->get('autologout_use_watchdog')) {
@@ -378,9 +377,6 @@ function _autologout_logout() {
 
 
 }
-
-
-
 
 /**
  * Helper to determine if a given user should be autologged out.

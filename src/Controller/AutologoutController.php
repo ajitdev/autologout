@@ -23,7 +23,6 @@ class AutologoutController extends ControllerBase {
     _autologout_logout();
     $url = Url::fromRoute('user.login');
     return new RedirectResponse($url->toString());
-
   }
 
   /**
