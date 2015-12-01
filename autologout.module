@@ -360,8 +360,6 @@ function _autologout_get_user_timeout($uid = NULL) {
   // If no user or role override exists, return the default timeout.
   return Drupal::config('autologout.settings')->get('autologout_timeout');
 }
-
-
 /**
  * Helper to perform the actual logout.
  */
@@ -374,13 +372,11 @@ function _autologout_logout() {
 
   // Destroy the current session.
   Drupal::moduleHandler()->invokeAll('user_logout', array($user));
+  \Drupal::service('session_manager')->destroy();
+  $user->setAccount(new AnonymousUserSession());
 
-  session_destroy();
 
-  // Load the anonymous user.
-  $user = new AnonymousUserSession();
 }
-
 
 /**
  * Helper to determine if a given user should be autologged out.
