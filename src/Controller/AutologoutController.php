@@ -5,7 +5,8 @@
  */
 
 namespace Drupal\autologout\Controller;
-
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Ajax;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Controller\ControllerBase;
@@ -20,7 +21,9 @@ class AutologoutController extends ControllerBase {
    */
   public function autologoutAhahLogout() {
     _autologout_logout();
-    exit();
+    $url = Url::fromRoute('user.login');
+    return new RedirectResponse($url->toString());
+
   }
 
   /**

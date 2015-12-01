@@ -103,6 +103,7 @@
                 logout();
                 return;
               }
+
               theDialog = dialog();
             }
           });
@@ -152,7 +153,9 @@
 
       function logout() {
         if (localSettings.use_alt_logout_method) {
-          window.location = drupalSettings.path.baseUrl + "?q=autologout_ahah_logout";
+          window.location = drupalSettings.path.baseUrl + "autologout_ahah_logout";
+
+
         }
         else {
           $.ajax({
