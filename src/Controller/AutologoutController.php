@@ -27,7 +27,7 @@ class AutologoutController extends ControllerBase {
    * Ajax callback to reset the last access session variable.
    */
   public function autologoutAhahSetLast() {
-    $_SESSION['autologout_last'] = time();
+    $_SESSION['autologout_last'] = REQUEST_TIME;
 
     // Reset the timer.
     $response = new AjaxResponse();

@@ -283,7 +283,7 @@ function autologaut_attach_js(&$element, $settings, $every_page = FALSE) {
  */
 function _autologout_get_remaining_time() {
   $timeout = _autologout_get_user_timeout();
-  $time_passed = isset($_SESSION['autologout_last']) ? time() - $_SESSION['autologout_last'] : 0;
+  $time_passed = isset($_SESSION['autologout_last']) ? REQUEST_TIME - $_SESSION['autologout_last'] : 0;
   return $timeout - $time_passed;
 }
 
