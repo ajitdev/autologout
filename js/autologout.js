@@ -46,6 +46,11 @@
           $(event.target).trigger('preventAutologout');
         });
 
+          // Bind formUpdated events to preventAutoLogout event.
+          $('body').bind('mousemove', function(event) {
+              $(event.target).trigger('preventAutologout');
+          });
+
         // Support for CKEditor.
         if (typeof CKEDITOR !== 'undefined') {
           CKEDITOR.on('instanceCreated', function(e) {
