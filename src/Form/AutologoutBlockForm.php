@@ -52,7 +52,6 @@ class AutologoutBlockForm extends ConfigFormBase {
     $form['timer'] = array(
       '#markup' => $markup,
     );
-    //print_r($form);
     return parent::buildForm($form, $form_state);
   }
 }
