@@ -54,7 +54,8 @@ class AutologoutWarningBlock extends BlockBase {
       $markup = $this->t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
     }
     elseif (Drupal::moduleHandler()->moduleExists('jstimer') && Drupal::moduleHandler()->moduleExists('jst_timer')) {
-      $markup = array(drupal_get_form('autologout_create_block_form'));
+      $markup = \Drupal::formBuilder()->getForm('Drupal\autologout\Form\AutologoutBlockForm');
+      return $markup;
     }
     else {
       $timeout = (int) Drupal::config('autologout.settings')->get('autologout_timeout', 1800);
