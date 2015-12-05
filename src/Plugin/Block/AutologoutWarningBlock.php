@@ -59,7 +59,7 @@ class AutologoutWarningBlock extends BlockBase {
     }
     else {
       $timeout = (int) Drupal::config('autologout.settings')->get('autologout_timeout', 1800);
-      $markup = $this->t('You will be logged out in !time if this page is not refreshed before then.', array('!time' => Drupal::service('date.formatter')->formatInterval($timeout)));
+      $markup = $this->t('You will be logged out in @time if this page is not refreshed before then.', array('@time' => Drupal::service('date.formatter')->formatInterval($timeout)));
     }
     return array(
       '#type' => 'markup',
