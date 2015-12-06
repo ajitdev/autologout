@@ -40,7 +40,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout value in seconds'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_timeout'),
+      '#default_value' => $config->get('autologout_timeout'),
       '#size' => 8,
       '#weight' => -10,
       '#description' => t('The length of inactivity time, in seconds, before automated log out.  Must be 60 seconds or greater. Will not be used if role timeout is activated.'),
@@ -49,7 +49,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_max_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Max timeout setting'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_max_timeout'),
+      '#default_value' => $config->get('autologout_max_timeout'),
       '#size' => 10,
       '#maxlength' => 12,
       '#weight' => -8,
@@ -59,7 +59,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_padding'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout padding'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_padding'),
+      '#default_value' => $config->get('autologout_padding'),
       '#size' => 8,
       '#weight' => -6,
       '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
@@ -68,7 +68,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_role_logout'] = array(
       '#type' => 'checkbox',
       '#title' => t('Role Timeout'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_role_logout'),
+      '#default_value' => \Drupal::config('autologout.settings')->get('autologout_role_logout'),
       '#weight' => -4,
       '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
     );
@@ -76,7 +76,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_redirect_url']  = array(
       '#type' => 'textfield',
       '#title' => t('Redirect URL at logout'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_redirect_url'),
+      '#default_value' => $config->get('autologout_redirect_url'),
       '#size' => 40,
       '#description' => t('Send users to this internal page when they are logged out.'),
     );
@@ -84,7 +84,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_no_dialog'] = array(
       '#type' => 'checkbox',
       '#title' => t('Do not display the logout dialog'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_no_dialog'),
+      '#default_value' => \Drupal::config('autologout.settings')->get('autologout_no_dialog'),
       '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
     );
 
@@ -97,7 +97,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_message']  = array(
       '#type' => 'textarea',
       '#title' => t('Message to display in the logout dialog'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_message'),
+      '#default_value' => $config->get('autologout_message'),
       '#size' => 40,
       '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.'),
     );
@@ -105,7 +105,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_inactivity_message']  = array(
       '#type' => 'textarea',
       '#title' => t('Message to display to the user after they are logged out.'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_inactivity_message'),
+      '#default_value' => $config->get('autologout_inactivity_message'),
       '#size' => 40,
       '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.'),
     );
@@ -113,7 +113,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_use_watchdog'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enable watchdog Automated Logout logging'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_use_watchdog'),
+      '#default_value' => $config->get('autologout_use_watchdog'),
       '#description' => t('Enable logging of automatically logged out users'),
     );
 
@@ -128,7 +128,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $form['autologout_jstimer_format']  = array(
         '#type' => 'textfield',
         '#title' => t('Autologout block time format'),
-        '#default_value' => Drupal::config('autologout.settings')->get('autologout_jstimer_format'),
+        '#default_value' => $config->get('autologout_jstimer_format'),
         '#description' => t('Change the display of the dynamic timer.  Available replacement values are: %day%, %month%, %year%, %dow%, %moy%, %years%, %ydays%, %days%, %hours%, %mins%, and %secs%.'),
       );
     }
@@ -148,14 +148,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $form['table'][] = array(
         'autologout_role_' . $key => array(
           '#type' => 'checkbox',
-          '#default_value' => Drupal::config('autologout.settings')->get('autologout_role_' . $key),
+          '#default_value' => $config->get('autologout_role_' . $key),
         ),
         'autologout_role' => array(
           '#markup' => $key,
         ),
         'autologout_role_' . $key . '_timeout' => array(
           '#type' => 'textfield',
-          '#default_value' => Drupal::config('autologout.settings')->get('autologout_role_' . $key . '_timeout'),
+          '#default_value' => $config->get('autologout_role_' . $key . '_timeout'),
           '#size' => 8,
         ),
       );
