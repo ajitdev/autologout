@@ -19,7 +19,7 @@ class AutologoutController extends ControllerBase {
   /**
    * AJAX callback that performs the actual logout and redirects the user.
    */
-  public function autologoutAhahLogout() {
+  public function AhahLogout() {
     _autologout_logout();
     $url = Url::fromRoute('user.login');
     return new RedirectResponse($url->toString());
@@ -28,7 +28,7 @@ class AutologoutController extends ControllerBase {
   /**
    * Ajax callback to reset the last access session variable.
    */
-  public function autologoutAhahSetLast() {
+  public function AhahSetLast() {
     $_SESSION['autologout_last'] = REQUEST_TIME;
 
     // Reset the timer.
@@ -42,7 +42,7 @@ class AutologoutController extends ControllerBase {
   /**
    * AJAX callback that returns the time remaining for this user is logged out.
    */
-  public function autologoutAhahGetRemainingTime() {
+  public function AhahGetRemainingTime() {
     $time_remaining_ms = _autologout_get_remaining_time() * 1000;
 
     // Reset the timer.
