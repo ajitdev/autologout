@@ -1,12 +1,12 @@
-autologout_timeout: 1800
-autologout_max_timeout: 172800
-autologout_padding: 10
-autologout_role_logout: FALSE
-autologout_redirect_url: '/user/login'
-autologout_no_dialog: 0
-autologout_message: 'Your session is about to expire. Do you want to reset it?'
-autologout_inactivity_message: 'You have been logged out due to inactivity.'
-autologout_enforce_admin: FALSE
-autologout_jstimer_format: '%hours%:%mins%:%secs%'
+timeout: 1800
+max_timeout: 172800
+padding: 10
+role_logout: FALSE
+redirect_url: '/user/login'
+no_dialog: 0
+message: 'Your session is about to expire. Do you want to reset it?'
+inactivity_message: 'You have been logged out due to inactivity.'
+enforce_admin: FALSE
+jstimer_format: '%hours%:%mins%:%secs%'
 jstimer_js_load_option: 0
 

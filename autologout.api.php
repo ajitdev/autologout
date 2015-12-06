@@ -38,7 +38,7 @@ function hook_autologout_prevent() {
 function hook_autologout_refresh_only() {
   // Check to see if an open admin page will keep
   // login alive.
-  if (\Drupal::service('router.admin_context')->isAdminRoute(routeMatch()->getRouteObject()) && !\Drupal::config('autologout.settings')->get('autologout_enforce_admin')) {
+  if (\Drupal::service('router.admin_context')->isAdminRoute(routeMatch()->getRouteObject()) && !\Drupal::config('autologout.settings')->get('enforce_admin')) {
     return TRUE;
   }
 }
