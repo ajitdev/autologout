@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\autologout\Form\AutologuotSettingsForm.
+ * Contains \Drupal\autologout\Form\AutologoutSettingsForm.
  */
 
 namespace Drupal\autologout\Form;
