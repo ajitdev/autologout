@@ -11,20 +11,10 @@ use Drupal\Core\Session\AnonymousUserSession;
  */
 
 /**
- * Get the timer HTML markup.
- *
- * @return string
- *   HTML to insert a countdown timer.
- */
-function autologout_create_timer() {
-  return _autologout_get_remaining_time();
-}
-
-/**
  * Implements hook_help().
  */
 function autologout_help($path, $arg) {
-  $seconds = _autologout_get_user_timeout();
+  $seconds = Drupal::service('autologout.manager')->autologoutGetUserTimeout();
   $message = NULL;
 
   switch ($path) {
@@ -64,11 +54,16 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
 
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
  * Adds a field to user/edit to change that users logout.
  */
 function autologout_form_user_form_alter(&$form, FormStateInterface $form_state) {
-  $user_timeout = _autologout_get_user_timeout();
+
+  $user_timeout = Drupal::service('autologout.manager')->autologoutGetUserTimeout();
   $user = \Drupal::currentUser();
+
+
   $current_uid = $user->id();
   $userid = $form_state->getFormObject()->getEntity()->id();
   $access = FALSE;
@@ -149,7 +144,7 @@ function autologout_autologout_prevent() {
   }
 
   // If user is anonymous or has no timeout set.
-  if ($user->id() == 0 || (!_autologout_get_user_timeout())) {
+  if ($user->id() == 0 || (!Drupal::service('autologout.manager')->autologoutGetUserTimeout())) {
     return TRUE;
   }
 
@@ -184,30 +179,36 @@ function autologout_autologout_refresh_only() {
 function autologout_page_attachments(array &$page) {
   $user = \Drupal::currentUser();
   $uid = $user->id();
+  $autologout_manager = \Drupal::service('autologout.manager');
   if ($uid == 0) {
     if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
-      _autologout_inactivity_message();
+      $autologout_manager->autologoutInactivityMessage();
+
     }
     return;
   }
 
   // Check if JS should be included on this request.
-  if (\Drupal::service('autologout.manager')->_autologout_prevent()) {
+  if ($autologout_manager->autologoutPreventJs()) {
+
     return;
   }
 
   // Check if anything wants to be refresh only. This URL would
   // include the javascript but will keep the login alive whilst
   // that page is opened.
-  $refresh_only = _autologout_refresh_only();
+  $refresh_only = $autologout_manager->autologoutRefreshOnly();
 
   $now = REQUEST_TIME;
-  $timeout = _autologout_get_user_timeout();
+
+  $timeout = $autologout_manager->autologoutGetUserTimeout();
+
   $timeout_padding = \Drupal::config('autologout.settings')->get('padding');
   $redirect_url = \Drupal::config('autologout.settings')->get('redirect_url');
   $redirect_query = \Drupal::service('redirect.destination')->getAsArray() + array('timeout' => 1);
   $no_dialog = \Drupal::config('autologout.settings')->get('no_dialog');
   $use_alt_logout_method = \Drupal::config('autologout.settings')->get('use_alt_logout_method');
+
 
   // Get all settings JS will need for dialog.
   $msg = t('@msg', array('@msg' => \Drupal::config('autologout.settings')->get('message')));
@@ -228,15 +229,19 @@ function autologout_page_attachments(array &$page) {
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
     // If time since last access is > than the timeout + padding, log them out.
     if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
-      _autologout_logout();
+      $autologout_manager->autologoutLogout();
+
       // User has changed so force Drupal to remake decisions based on user.
       global $theme, $theme_key;
       drupal_static_reset();
       $theme = NULL;
       $theme_key = NULL;
-      // menu_set_custom_theme();
+      
+      Drupal::theme()->getActiveTheme();
+
       \Drupal::theme()->getActiveTheme();
-      _autologout_inactivity_message();
+      $autologout_manager->autologoutInactivityMessage();
+
     }
     else {
       $_SESSION['autologout_last'] = $now;
@@ -251,7 +256,7 @@ function autologout_page_attachments(array &$page) {
  * Implements hook_page_bottom().
  */
 function autologout_page_bottom() {
-  if (!\Drupal::service('autologout.manager')->_autologout_prevent()) {
+  if (!Drupal::service('autologout.manager')->autologoutPreventJs()) {
     $page_bottom['autologout'] = [
       '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
     ];
@@ -273,165 +278,6 @@ function autologaut_attach_js(&$element, $settings, $every_page = FALSE) {
   $element['#attached']['library'][] = 'autologout/drupal.autologout';
 }
 
-
-/**
- * Get the time remaining before logout.
- *
- * @return int
- *   Number of seconds remaining.
- */
-function _autologout_get_remaining_time() {
-  $timeout = _autologout_get_user_timeout();
-  $time_passed = isset($_SESSION['autologout_last']) ? REQUEST_TIME - $_SESSION['autologout_last'] : 0;
-  return $timeout - $time_passed;
-}
-
-
-/**
- * Go through every role to get timeout value, default is the global timeout.
- */
-function _autologout_get_role_timeout() {
-  $roles = user_roles(TRUE);
-  $role_timeout = array();
-
-  // Go through roles, get timeouts for each and return as array.
-  foreach ($roles as $rid => $role) {
-    if (\Drupal::config('autologout.settings')->get('role_' . $rid)) {
-      $timeout_role = \Drupal::config('autologout.settings')->get('role_' . $rid . '_timeout');
-      $role_timeout[$rid] = $timeout_role;
-    }
-  }
-  return $role_timeout;
-}
-
-
-/**
- * Get a user's timeout in seconds.
- *
- * @param int $uid
- *   (Optional) Provide a user's uid to get the timeout for.
- *   Default is the logged in user.
- *
- * @return int
- *   The number of seconds the user can be idle for before being
- *   logged out. A value of 0 means no timeout.
- */
-function _autologout_get_user_timeout($uid = NULL) {
-
-  if (is_null($uid)) {
-    // If $uid is not provided, use the logged in user.
-    $user = \Drupal::currentUser();
-  }
-  else {
-    $user = User::load($uid);
-  }
-
-  $uid = $user->id();
-
-  if ($user->id() == 0) {
-    // Anonymous doesn't get logged out.
-    return 0;
-  }
-
-  if (is_numeric($user_timeout = \Drupal::config('autologout.settings')->get('user_' . $user->id()))) {
-    // User timeout takes precedence.
-    return $user_timeout;
-  }
-
-  // Get role timeouts for user.
-  if (\Drupal::config('autologout.settings')->get('role_logout')) {
-    $user_roles = $user->getRoles();
-    $output = array();
-    $timeouts = _autologout_get_role_timeout();
-    foreach ($user_roles as $rid => $role) {
-      if (isset($timeouts[$role])) {
-        $output[$rid] = $timeouts[$role];
-      }
-    }
-
-    // Assign the lowest timeout value to be session timeout value.
-    if (!empty($output)) {
-      // If one of the user's roles has a unique timeout, use this.
-      return min($output);
-    }
-  }
-
-  // If no user or role override exists, return the default timeout.
-  return \Drupal::config('autologout.settings')->get('timeout');
-}
-/**
- * Helper to perform the actual logout.
- */
-function _autologout_logout() {
-  $user = \Drupal::currentUser();
-
-  if (\Drupal::config('autologout.settings')->get('use_watchdog')) {
-    \Drupal::logger('user')->info('Session automatically closed for %name by autologout.', array('%name' => $user->getUsername()));
-  }
-
-  // Destroy the current session.
-  \Drupal::moduleHandler()->invokeAll('user_logout', array($user));
-  \Drupal::service('session_manager')->destroy();
-  $user->setAccount(new AnonymousUserSession());
-
-
-}
-
-/**
- * Helper to determine if a given user should be autologged out.
- */
-function _autologout_logout_role($user) {
-  if (\Drupal::config('autologout.settings')->get('role_logout')) {
-    foreach ($user->roles as $key => $role) {
-      if (\Drupal::config('autologout.settings')->get('role_' . $key)) {
-        return TRUE;
-      }
-    }
-  }
-
-  return FALSE;
-}
-
-
-/**
- * Display the inactivity message if required.
- */
-function _autologout_inactivity_message() {
-  $message = \Drupal::config('autologout.settings')->get('inactivity_message');
-  if (!empty($message)) {
-    drupal_set_message($message);
-  }
-}
-
-
-/**
- * Determine if autologout should be prevented.
- *
- * @return bool
- *   TRUE if there is a reason not to autologout
- *   the current user on the current page.
- */
-
-
-/**
- * Determine if connection should be refreshed.
- *
- * @return bool
- *   TRUE if something about the current context
- *   should keep the connection open. FALSE and
- *   the standard countdown to autologout applies.
- */
-function _autologout_refresh_only() {
-  foreach (\Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
-    if (!empty($module_refresh_only)) {
-      return TRUE;
-    }
-  }
-
-  return FALSE;
-}
-
-
 /**
  * Implements hook_user_login().
  *
@@ -441,7 +287,7 @@ function _autologout_refresh_only() {
  */
 function autologout_user_login($account) {
   // Cleanup old sessions.
-  $timeout = _autologout_get_user_timeout($account->id());
+  $timeout = Drupal::service('autologout.manager')->autologoutGetUserTimeout($account->id());
 
   if (empty($timeout)) {
     // Users that don't get logged have their sessions left.

@@ -43,13 +43,16 @@ class AutologoutWarningBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    if (\Drupal::service('autologout.manager')->_autologout_prevent()) {
+    $autologout_manager = \Drupal::service('autologout.manager');
+    if ($autologout_manager->autologoutPreventJs()) {
+
       // Don't display the block if the user is not going
       // to be logged out on this page.
       return;
     }
 
-    if (_autologout_refresh_only()) {
+    if ($autologout_manager->autologoutRefreshOnly()) {
+
       $markup = $this->t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
     }
     elseif (\Drupal::moduleHandler()->moduleExists('jstimer') && \Drupal::moduleHandler()->moduleExists('jst_timer')) {
