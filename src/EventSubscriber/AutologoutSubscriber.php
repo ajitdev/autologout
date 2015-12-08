@@ -16,7 +16,7 @@ class AutologoutSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
    */
   public function checkForAutologoutjs(GetResponseEvent $event) {
-    if (_autologout_prevent()) {
+    if (\Drupal::service('autologout.manager')->_autologout_prevent()) {
       return;
     }
   }

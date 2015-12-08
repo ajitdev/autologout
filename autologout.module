@@ -192,7 +192,7 @@ function autologout_page_attachments(array &$page) {
   }
 
   // Check if JS should be included on this request.
-  if (_autologout_prevent()) {
+  if (\Drupal::service('autologout.manager')->_autologout_prevent()) {
     return;
   }
 
@@ -251,7 +251,7 @@ function autologout_page_attachments(array &$page) {
  * Implements hook_page_bottom().
  */
 function autologout_page_bottom() {
-  if (!_autologout_prevent()) {
+  if (!\Drupal::service('autologout.manager')->_autologout_prevent()) {
     $page_bottom['autologout'] = [
       '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
     ];
@@ -411,15 +411,6 @@ function _autologout_inactivity_message() {
  *   TRUE if there is a reason not to autologout
  *   the current user on the current page.
  */
-function _autologout_prevent() {
-  foreach (\Drupal::moduleHandler()->invokeAll('autologout_prevent') as $prevent) {
-    if (!empty($prevent)) {
-      return TRUE;
-    }
-  }
-
-  return FALSE;
-}
 
 
 /**

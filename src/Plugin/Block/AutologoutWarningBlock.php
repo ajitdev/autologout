@@ -43,7 +43,7 @@ class AutologoutWarningBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    if (_autologout_prevent()) {
+    if (\Drupal::service('autologout.manager')->_autologout_prevent()) {
       // Don't display the block if the user is not going
       // to be logged out on this page.
       return;
