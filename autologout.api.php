@@ -20,7 +20,8 @@
  */
 function hook_autologout_prevent() {
   // Don't include autologout JS checks on ajax callbacks.
-  if (in_array(arg(0), array('ajax', 'autologout_ahah_logout', 'autologout_ahah_set_last'))) {
+  $path_args = explode('/', current_path());
+  if (in_array($path_args[0], array('ajax', 'autologout_ahah_logout', 'autologout_ahah_set_last'))) {
     return TRUE;
   }
 }
@@ -37,7 +38,7 @@ function hook_autologout_prevent() {
 function hook_autologout_refresh_only() {
   // Check to see if an open admin page will keep
   // login alive.
-  if (arg(0) == 'admin' && !\Drupal::config('autologout.settings')->get('autologout_enforce_admin')) {
+  if (\Drupal::service('router.admin_context')->isAdminRoute(routeMatch()->getRouteObject()) && !\Drupal::config('autologout.settings')->get('enforce_admin')) {
     return TRUE;
   }
 }

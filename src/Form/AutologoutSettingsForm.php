@@ -40,7 +40,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout value in seconds'),
-      '#default_value' => $config->get('autologout_timeout'),
+      '#default_value' => $config->get('timeout'),
       '#size' => 8,
       '#weight' => -10,
       '#description' => t('The length of inactivity time, in seconds, before automated log out.  Must be 60 seconds or greater. Will not be used if role timeout is activated.'),
@@ -49,7 +49,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_max_timeout'] = array(
       '#type' => 'textfield',
       '#title' => t('Max timeout setting'),
-      '#default_value' => $config->get('autologout_max_timeout'),
+      '#default_value' => $config->get('max_timeout'),
       '#size' => 10,
       '#maxlength' => 12,
       '#weight' => -8,
@@ -59,7 +59,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_padding'] = array(
       '#type' => 'textfield',
       '#title' => t('Timeout padding'),
-      '#default_value' => $config->get('autologout_padding'),
+      '#default_value' => $config->get('padding'),
       '#size' => 8,
       '#weight' => -6,
       '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
@@ -68,7 +68,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_role_logout'] = array(
       '#type' => 'checkbox',
       '#title' => t('Role Timeout'),
-      '#default_value' => \Drupal::config('autologout.settings')->get('autologout_role_logout'),
+      '#default_value' => $config->get('role_logout'),
       '#weight' => -4,
       '#description' => t('Enable each role to have its own timeout threshold, a refresh maybe required for changes to take effect. Any role not ticked will use the default timeout value. Any role can have a value of 0 which means that they will never be logged out.'),
     );
@@ -76,7 +76,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_redirect_url']  = array(
       '#type' => 'textfield',
       '#title' => t('Redirect URL at logout'),
-      '#default_value' => $config->get('autologout_redirect_url'),
+      '#default_value' => $config->get('redirect_url'),
       '#size' => 40,
       '#description' => t('Send users to this internal page when they are logged out.'),
     );
@@ -84,20 +84,20 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_no_dialog'] = array(
       '#type' => 'checkbox',
       '#title' => t('Do not display the logout dialog'),
-      '#default_value' => \Drupal::config('autologout.settings')->get('autologout_no_dialog'),
+      '#default_value' => $config->get('no_dialog'),
       '#description' => t('Enable this if you want users to logout right away and skip displaying the logout dialog.'),
     );
 
     $form['autologout_use_alt_logout_method'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use alternate logout method'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_use_alt_logout_method'),
+      '#default_value' => $config->get('use_alt_logout_method'),
       '#description' => t('Normally when auto logout is triggered, it is done via an AJAX service call. Sites that use an SSO provider, such as CAS, are likely to see this request fail with the error "Origin is not allowed by Access-Control-Allow-Origin". The alternate appraoch is to have the auto logout trigger a page redirect to initiate the logout process instead.'),
     );
     $form['autologout_message']  = array(
       '#type' => 'textarea',
       '#title' => t('Message to display in the logout dialog'),
-      '#default_value' => $config->get('autologout_message'),
+      '#default_value' => $config->get('message'),
       '#size' => 40,
       '#description' => t('This message must be plain text as it might appear in a JavaScript confirm dialog.'),
     );
@@ -105,7 +105,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_inactivity_message']  = array(
       '#type' => 'textarea',
       '#title' => t('Message to display to the user after they are logged out.'),
-      '#default_value' => $config->get('autologout_inactivity_message'),
+      '#default_value' => $config->get('inactivity_message'),
       '#size' => 40,
       '#description' => t('This message is displayed after the user was logged out due to inactivity. You can leave this blank to show no message to the user.'),
     );
@@ -113,22 +113,22 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $form['autologout_use_watchdog'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enable watchdog Automated Logout logging'),
-      '#default_value' => $config->get('autologout_use_watchdog'),
+      '#default_value' => $config->get('use_watchdog'),
       '#description' => t('Enable logging of automatically logged out users'),
     );
 
     $form['autologout_enforce_admin'] = array(
       '#type' => 'checkbox',
       '#title' => t('Enforce auto logout on admin pages'),
-      '#default_value' => Drupal::config('autologout.settings')->get('autologout_enforce_admin'),
+      '#default_value' => $config->get('enforce_admin'),
       '#description' => t('If checked, then users will be automatically logged out when administering the site.'),
     );
 
-    if (\Drupal::moduleHandler()->moduleExists('jstimer') && \Drupal::moduleHandler()->moduleExists('jst_timer')) {
+    if (Drupal::moduleHandler()->moduleExists('jstimer') && Drupal::moduleHandler()->moduleExists('jst_timer')) {
       $form['autologout_jstimer_format']  = array(
         '#type' => 'textfield',
         '#title' => t('Autologout block time format'),
-        '#default_value' => $config->get('autologout_jstimer_format'),
+        '#default_value' => $config->get('jstimer_format'),
         '#description' => t('Change the display of the dynamic timer.  Available replacement values are: %day%, %month%, %year%, %dow%, %moy%, %years%, %ydays%, %days%, %hours%, %mins%, and %secs%.'),
       );
     }
@@ -148,14 +148,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $form['table'][] = array(
         'autologout_role_' . $key => array(
           '#type' => 'checkbox',
-          '#default_value' => $config->get('autologout_role_' . $key),
+          '#default_value' => $config->get('role_' . $key),
         ),
         'autologout_role' => array(
           '#markup' => $key,
         ),
         'autologout_role_' . $key . '_timeout' => array(
           '#type' => 'textfield',
-          '#default_value' => $config->get('autologout_role_' . $key . '_timeout'),
+          '#default_value' => $config->get('role_' . $key . '_timeout'),
           '#size' => 8,
         ),
       );
@@ -182,7 +182,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $validate = autologout_timeout_validate($timeout, $max_timeout);
 
       if (!$validate) {
-        $form_state->setErrorByName('autologout_role_' . $key . '_timeout', t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
+        $form_state->setErrorByName('role_' . $key . '_timeout', t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
       }
     }
 
@@ -190,14 +190,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
 
     // Validate timeout.
     if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
-      $form_state->setErrorByName('autologout_timeout', t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
+      $form_state->setErrorByName('timeout', t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
     }
 
     $autologout_redirect_url = $input_values['autologout_redirect_url'];
 
     // Validate redirect url.
     if (strpos($autologout_redirect_url, '/') !== 0) {
-      $form_state->setErrorByName('autologout_redirect_url', t("The user-entered string :autologout_redirect_url must begin with a '/'", array(':autologout_redirect_url' => $autologout_redirect_url)));
+      $form_state->setErrorByName('redirect_url', t("The user-entered string :autologout_redirect_url must begin with a '/'", array(':autologout_redirect_url' => $autologout_redirect_url)));
     }
 
     parent::validateForm($form, $form_state);
@@ -228,18 +228,18 @@ class AutologoutSettingsForm extends ConfigFormBase {
     if(empty($input_values['autologout_use_alt_logout_method'])) {
       $autologout_use_alt_logout_method = 0;
     }
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('autologout_timeout', $input_values['autologout_timeout'])
-      ->set('autologout_max_timeout', $input_values['autologout_max_timeout'])
-      ->set('autologout_padding', $input_values['autologout_padding'])
-      ->set('autologout_role_logout', $autologout_role_logout)
-      ->set('autologout_redirect_url', $input_values['autologout_redirect_url'])
-      ->set('autologout_no_dialog', $autologout_no_dialog)
-      ->set('autologout_use_alt_logout_method', $autologout_use_alt_logout_method)
-      ->set('autologout_message', $input_values['autologout_message'])
-      ->set('autologout_inactivity_message', $input_values['autologout_inactivity_message'])
-      ->set('autologout_use_watchdog', $autologout_use_watchdog)
-      ->set('autologout_enforce_admin', $autologout_enforce_admin)
+    $config = Drupal::configFactory()->getEditable('autologout.settings');
+    $config->set('timeout', $input_values['autologout_timeout'])
+      ->set('max_timeout', $input_values['autologout_max_timeout'])
+      ->set('padding', $input_values['autologout_padding'])
+      ->set('role_logout', $autologout_role_logout)
+      ->set('redirect_url', $input_values['autologout_redirect_url'])
+      ->set('no_dialog', $autologout_no_dialog)
+      ->set('use_alt_logout_method', $autologout_use_alt_logout_method)
+      ->set('message', $input_values['autologout_message'])
+      ->set('inactivity_message', $input_values['autologout_inactivity_message'])
+      ->set('use_watchdog', $autologout_use_watchdog)
+      ->set('enforce_admin', $autologout_enforce_admin)
       ->save();
     foreach ($input_values['table'] as $user) {
       foreach ($user as $key => $value) {
@@ -247,7 +247,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       }
     }
     if (isset($input_values['autologout_jstimer_format'])) {
-      $config->set('autologout_jstimer_format', $form_state['values']['autologout_jstimer_format'])->save();
+      $config->set('jstimer_format', $form_state['values']['autologout_jstimer_format'])->save();
     }
 
     parent::submitForm($form, $form_state);
