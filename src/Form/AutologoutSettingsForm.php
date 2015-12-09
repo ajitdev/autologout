@@ -7,7 +7,6 @@
 
 namespace Drupal\autologout\Form;
 
-use Drupal;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -124,7 +123,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       '#description' => t('If checked, then users will be automatically logged out when administering the site.'),
     );
 
-    if (Drupal::moduleHandler()->moduleExists('jstimer') && Drupal::moduleHandler()->moduleExists('jst_timer')) {
+    if (\Drupal::moduleHandler()->moduleExists('jstimer') && \Drupal::moduleHandler()->moduleExists('jst_timer')) {
       $form['autologout_jstimer_format']  = array(
         '#type' => 'textfield',
         '#title' => t('Autologout block time format'),
@@ -228,7 +227,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     if(empty($input_values['autologout_use_alt_logout_method'])) {
       $autologout_use_alt_logout_method = 0;
     }
-    $config = Drupal::configFactory()->getEditable('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('timeout', $input_values['autologout_timeout'])
       ->set('max_timeout', $input_values['autologout_max_timeout'])
       ->set('padding', $input_values['autologout_padding'])

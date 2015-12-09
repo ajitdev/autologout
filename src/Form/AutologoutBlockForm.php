@@ -7,7 +7,6 @@
 
 namespace Drupal\autologout\Form;
 
-use Drupal;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
