@@ -52,7 +52,6 @@ class AutologoutWarningBlock extends BlockBase {
     }
 
     if ($autologout_manager->autologoutRefreshOnly()) {
-
       $markup = $this->t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
     }
     elseif (\Drupal::moduleHandler()->moduleExists('jstimer') && \Drupal::moduleHandler()->moduleExists('jst_timer')) {

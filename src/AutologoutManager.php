@@ -1,7 +1,6 @@
 <?php
 namespace Drupal\autologout;
 
-use Drupal;
 use Drupal\autologout\AutologoutHelperInterface;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
@@ -17,7 +16,7 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutPreventJs() {
-    foreach (Drupal::moduleHandler()->invokeAll('autologout_prevent') as $prevent) {
+    foreach (\Drupal::moduleHandler()->invokeAll('autologout_prevent') as $prevent) {
       if (!empty($prevent)) {
         return TRUE;
       }
@@ -29,7 +28,7 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutRefreshOnly() {
-    foreach (Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
+    foreach (\Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
       if (!empty($module_refresh_only)) {
         return TRUE;
       }
@@ -42,7 +41,7 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutInactivityMessage() {
-    $message = Drupal::config('autologout.settings')->get('inactivity_message');
+    $message = \Drupal::config('autologout.settings')->get('inactivity_message');
     if (!empty($message)) {
       drupal_set_message($message);
     }
@@ -52,15 +51,15 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutLogout() {
-    $user = Drupal::currentUser();
+    $user = \Drupal::currentUser();
 
-    if (Drupal::config('autologout.settings')->get('use_watchdog')) {
-      Drupal::logger('user')->info('Session automatically closed for %name by autologout.', array('%name' => $user->getUsername()));
+    if (\Drupal::config('autologout.settings')->get('use_watchdog')) {
+      \Drupal::logger('user')->info('Session automatically closed for %name by autologout.', array('%name' => $user->getUsername()));
     }
 
     // Destroy the current session.
-    Drupal::moduleHandler()->invokeAll('user_logout', array($user));
-    Drupal::service('session_manager')->destroy();
+    \Drupal::moduleHandler()->invokeAll('user_logout', array($user));
+    \Drupal::service('session_manager')->destroy();
     $user->setAccount(new AnonymousUserSession());
 
 
@@ -75,8 +74,8 @@ class AutologoutManager implements AutologoutManagerInterface {
 
     // Go through roles, get timeouts for each and return as array.
     foreach ($roles as $rid => $role) {
-      if (Drupal::config('autologout.settings')->get('role_' . $rid)) {
-        $timeout_role = Drupal::config('autologout.settings')->get('role_' . $rid . '_timeout');
+      if (\Drupal::config('autologout.settings')->get('role_' . $rid)) {
+        $timeout_role = \Drupal::config('autologout.settings')->get('role_' . $rid . '_timeout');
         $role_timeout[$rid] = $timeout_role;
       }
     }
@@ -87,7 +86,7 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutGetRemainingTime() {
-    $timeout = Drupal::service('autologout.manager')->autologoutGetUserTimeout();
+    $timeout = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
     $time_passed = isset($_SESSION['autologout_last']) ? REQUEST_TIME - $_SESSION['autologout_last'] : 0;
     return $timeout - $time_passed;
   }
@@ -97,7 +96,7 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutCreateTimer() {
-    return Drupal::service('autologout.manager')->autologoutGetRemainingTime();
+    return \Drupal::service('autologout.manager')->autologoutGetRemainingTime();
   }
 
   /**
@@ -107,7 +106,7 @@ class AutologoutManager implements AutologoutManagerInterface {
 
     if (is_null($uid)) {
       // If $uid is not provided, use the logged in user.
-      $user = Drupal::currentUser();
+      $user = \Drupal::currentUser();
     }
     else {
       $user = User::load($uid);
@@ -120,16 +119,16 @@ class AutologoutManager implements AutologoutManagerInterface {
       return 0;
     }
 
-    if (is_numeric($user_timeout = Drupal::config('autologout.settings')->get('user_' . $user->id()))) {
+    if (is_numeric($user_timeout = \Drupal::config('autologout.settings')->get('user_' . $user->id()))) {
       // User timeout takes precedence.
       return $user_timeout;
     }
 
     // Get role timeouts for user.
-    if (Drupal::config('autologout.settings')->get('role_logout')) {
+    if (\Drupal::config('autologout.settings')->get('role_logout')) {
       $user_roles = $user->getRoles();
       $output = array();
-      $timeouts = Drupal::service('autologout.manager')->autologoutGetRoleTimeout();
+      $timeouts = \Drupal::service('autologout.manager')->autologoutGetRoleTimeout();
       foreach ($user_roles as $rid => $role) {
         if (isset($timeouts[$role])) {
           $output[$rid] = $timeouts[$role];
@@ -144,16 +143,16 @@ class AutologoutManager implements AutologoutManagerInterface {
     }
 
     // If no user or role override exists, return the default timeout.
-    return Drupal::config('autologout.settings')->get('timeout');
+    return \Drupal::config('autologout.settings')->get('timeout');
   }
 
   /**
    * {@inheritdoc}
    */
   function autologoutLogoutRole($user) {
-    if (Drupal::config('autologout.settings')->get('role_logout')) {
+    if (\Drupal::config('autologout.settings')->get('role_logout')) {
       foreach ($user->roles as $key => $role) {
-        if (Drupal::config('autologout.settings')->get('role_' . $key)) {
+        if (\Drupal::config('autologout.settings')->get('role_' . $key)) {
           return TRUE;
         }
       }

@@ -183,7 +183,6 @@ function autologout_page_attachments(array &$page) {
   if ($uid == 0) {
     if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
       $autologout_manager->autologoutInactivityMessage();
-
     }
     return;
   }
@@ -239,7 +238,6 @@ function autologout_page_attachments(array &$page) {
 
       \Drupal::theme()->getActiveTheme();
       $autologout_manager->autologoutInactivityMessage();
-
     }
     else {
       $_SESSION['autologout_last'] = $now;
