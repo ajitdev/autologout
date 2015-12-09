@@ -14,7 +14,7 @@ use Drupal\Core\Session\AnonymousUserSession;
  * Implements hook_help().
  */
 function autologout_help($path, $arg) {
-  $seconds = Drupal::service('autologout.manager')->autologoutGetUserTimeout();
+  $seconds = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
   $message = NULL;
 
   switch ($path) {
@@ -60,7 +60,7 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
  */
 function autologout_form_user_form_alter(&$form, FormStateInterface $form_state) {
 
-  $user_timeout = Drupal::service('autologout.manager')->autologoutGetUserTimeout();
+  $user_timeout = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
   $user = \Drupal::currentUser();
 
 
@@ -144,7 +144,7 @@ function autologout_autologout_prevent() {
   }
 
   // If user is anonymous or has no timeout set.
-  if ($user->id() == 0 || (!Drupal::service('autologout.manager')->autologoutGetUserTimeout())) {
+  if ($user->id() == 0 || (!\Drupal::service('autologout.manager')->autologoutGetUserTimeout())) {
     return TRUE;
   }
 
@@ -236,8 +236,6 @@ function autologout_page_attachments(array &$page) {
       drupal_static_reset();
       $theme = NULL;
       $theme_key = NULL;
-      
-      Drupal::theme()->getActiveTheme();
 
       \Drupal::theme()->getActiveTheme();
       $autologout_manager->autologoutInactivityMessage();
@@ -256,7 +254,7 @@ function autologout_page_attachments(array &$page) {
  * Implements hook_page_bottom().
  */
 function autologout_page_bottom() {
-  if (!Drupal::service('autologout.manager')->autologoutPreventJs()) {
+  if (!\Drupal::service('autologout.manager')->autologoutPreventJs()) {
     $page_bottom['autologout'] = [
       '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
     ];
@@ -287,7 +285,7 @@ function autologaut_attach_js(&$element, $settings, $every_page = FALSE) {
  */
 function autologout_user_login($account) {
   // Cleanup old sessions.
-  $timeout = Drupal::service('autologout.manager')->autologoutGetUserTimeout($account->id());
+  $timeout = \Drupal::service('autologout.manager')->autologoutGetUserTimeout($account->id());
 
   if (empty($timeout)) {
     // Users that don't get logged have their sessions left.

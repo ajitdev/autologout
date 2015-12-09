@@ -20,7 +20,7 @@ class AutologoutController extends ControllerBase {
    * AJAX callback that performs the actual logout and redirects the user.
    */
   public function AhahLogout() {
-    Drupal::service('autologout.manager')->autologoutLogout();
+    \Drupal::service('autologout.manager')->autologoutLogout();
     $url = Url::fromRoute('user.login');
     return new RedirectResponse($url->toString());
   }
@@ -33,7 +33,7 @@ class AutologoutController extends ControllerBase {
 
     // Reset the timer.
     $response = new AjaxResponse();
-    $markup = Drupal::service('autologout.manager')->autologoutCreateTimer();
+    $markup = \Drupal::service('autologout.manager')->autologoutCreateTimer();
     $response->addCommand(new Ajax\ReplaceCommand('#timer', $markup));
 
     return $response;
