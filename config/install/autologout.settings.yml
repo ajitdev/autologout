@@ -9,4 +9,3 @@ inactivity_message: 'You have been logged out due to inactivity.'
 enforce_admin: FALSE
 jstimer_format: '%hours%:%mins%:%secs%'
 jstimer_js_load_option: 0
-

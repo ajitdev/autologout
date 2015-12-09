@@ -46,10 +46,10 @@
           $(event.target).trigger('preventAutologout');
         });
 
-          // Bind formUpdated events to preventAutoLogout event.
-          $('body').bind('mousemove', function(event) {
-              $(event.target).trigger('preventAutologout');
-          });
+        // Bind formUpdated events to preventAutoLogout event.
+        $('body').bind('mousemove', function(event) {
+          $(event.target).trigger('preventAutologout');
+        });
 
         // Support for CKEditor.
         if (typeof CKEDITOR !== 'undefined') {
@@ -129,14 +129,14 @@
 
         return $('<div id="autologout-confirm">' + localSettings.message + '</div>').dialog({
           modal: true,
-               closeOnEscape: false,
-               width: "auto",
-               dialogClass: 'autologout-dialog',
-               title: localSettings.title,
-               buttons: buttons,
-               close: function(event, ui) {
-                 logout();
-               }
+          closeOnEscape: false,
+          width: "auto",
+          dialogClass: 'autologout-dialog',
+          title: localSettings.title,
+          buttons: buttons,
+          close: function(event, ui) {
+            logout();
+          }
         });
       }
 

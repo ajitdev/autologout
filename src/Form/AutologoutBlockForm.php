@@ -7,7 +7,6 @@
 
 namespace Drupal\autologout\Form;
 
-use Drupal;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -54,4 +53,5 @@ class AutologoutBlockForm extends ConfigFormBase {
     );
     return parent::buildForm($form, $form_state);
   }
+
 }
