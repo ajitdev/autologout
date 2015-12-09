@@ -1,8 +1,11 @@
 <?php
+/**
+ * @file
+ * Contains \Drupal\autologout\EventSubscriber\AutologoutSubscriber.
+ */
+
 namespace Drupal\autologout\EventSubscriber;
 
-use Drupal\Core\Url;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -21,10 +24,9 @@ class AutologoutSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  static function getSubscribedEvents() {
+  public static function getSubscribedEvents() {
     $events[KernelEvents::REQUEST][] = array('checkForAutologoutjs');
     return $events;
   }
 
 }
-?>

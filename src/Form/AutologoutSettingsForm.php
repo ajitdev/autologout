@@ -212,19 +212,19 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $autologout_use_watchdog = 1;
     $autologout_enforce_admin = 1;
     $autologout_use_alt_logout_method = 1;
-    if(empty($input_values['autologout_no_dialog'])) {
+    if (empty($input_values['autologout_no_dialog'])) {
       $autologout_no_dialog = 0;
     }
-    if(empty($input_values['autologout_role_logout'])) {
+    if (empty($input_values['autologout_role_logout'])) {
       $autologout_role_logout = 0;
     }
-    if(empty($input_values['autologout_use_watchdog'])) {
+    if (empty($input_values['autologout_use_watchdog'])) {
       $autologout_use_watchdog = 0;
     }
-    if(empty($input_values['autologout_enforce_admin'])) {
+    if (empty($input_values['autologout_enforce_admin'])) {
       $autologout_enforce_admin = 0;
     }
-    if(empty($input_values['autologout_use_alt_logout_method'])) {
+    if (empty($input_values['autologout_use_alt_logout_method'])) {
       $autologout_use_alt_logout_method = 0;
     }
     $config = \Drupal::configFactory()->getEditable('autologout.settings');

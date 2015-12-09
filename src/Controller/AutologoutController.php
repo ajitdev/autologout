@@ -5,6 +5,7 @@
  */
 
 namespace Drupal\autologout\Controller;
+
 use Drupal\Core\Url;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Ajax;
