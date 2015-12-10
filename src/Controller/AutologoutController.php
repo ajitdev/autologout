@@ -1,11 +1,13 @@
 <?php
 /**
  * @file
- * Contains \Drupal\autologout\Controller\AutologouteController.
+ * Contains \Drupal\autologout\Controller\AutologoutController.
  */
 
 namespace Drupal\autologout\Controller;
+use Drupal\autologout\AutologoutManagerInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Ajax;
 use Drupal\Core\Ajax\AjaxResponse;
@@ -17,10 +19,36 @@ use Drupal\Core\Controller\ControllerBase;
 class AutologoutController extends ControllerBase {
 
   /**
+   * The autologout manager service.
+   *
+   * @var \Drupal\autologout\AutologoutManagerInterface
+   */
+  protected $autoLogoutManager;
+
+  /**
+   * Constructs a new \Drupal\autologout\EventSubscriber\AutologoutSubscriber object.
+   *
+   * @param \Drupal\autologout\AutologoutManagerInterface $autologout
+   *    The autologout manager service.
+   */
+  public function __construct(AutologoutManagerInterface $autologout) {
+    $this->autoLogoutManager = $autologout;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('autologout.manager')
+    );
+  }
+
+  /**
    * AJAX callback that performs the actual logout and redirects the user.
    */
   public function ahahLogout() {
-    \Drupal::service('autologout.manager')->autologoutLogout();
+    $this->autoLogoutManager->autologoutLogout();
     $url = Url::fromRoute('user.login');
     return new RedirectResponse($url->toString());
   }
@@ -33,7 +61,7 @@ class AutologoutController extends ControllerBase {
 
     // Reset the timer.
     $response = new AjaxResponse();
-    $markup = \Drupal::service('autologout.manager')->autologoutCreateTimer();
+    $markup = $this->autoLogoutManager->autologoutCreateTimer();
     $response->addCommand(new Ajax\ReplaceCommand('#timer', $markup));
 
     return $response;
@@ -43,12 +71,11 @@ class AutologoutController extends ControllerBase {
    * AJAX callback that returns the time remaining for this user is logged out.
    */
   public function ahahGetRemainingTime() {
-    $autologout_manager = \Drupal::service('autologout.manager');
-    $time_remaining_ms = $autologout_manager->autologoutGetRemainingTime() * 1000;
+    $time_remaining_ms = $this->autoLogoutManager->autologoutGetRemainingTime() * 1000;
 
     // Reset the timer.
     $response = new AjaxResponse();
-    $markup = $autologout_manager->autologoutCreateTimer();
+    $markup = $this->autoLogoutManager->autologoutCreateTimer();
 
     $response->addCommand(new Ajax\ReplaceCommand('#timer', $markup));
     $response->addCommand(new Ajax\SettingsCommand(array('time' => $time_remaining_ms)));
