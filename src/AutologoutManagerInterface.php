@@ -29,7 +29,7 @@ interface AutologoutManagerInterface {
    * Go through every role to get timeout value, default is the global timeout.
    *
    * @return int
-   * Number of seconds timeout set for the user role.
+   *    Number of seconds timeout set for the user role.
    */
   public function autologoutGetRoleTimeout();
 
@@ -81,4 +81,4 @@ interface AutologoutManagerInterface {
    */
   public function autologoutRefreshOnly();
 
- }
+}
