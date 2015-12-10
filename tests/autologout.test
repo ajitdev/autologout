@@ -222,7 +222,7 @@ class AutologoutTestCase extends DrupalWebTestCase {
    * Test the precedence of the timeouts.
    *
    * This tests the following function:
-   * _autologout_get_user_timeout();
+   * autologoutGetUserTimeout();
    */
   public function testAutologoutTimeoutPrecedence() {
     $uid = $this->privileged_user->uid;
@@ -474,7 +474,7 @@ class AutologoutTestCase extends DrupalWebTestCase {
    *   The test grouping
    */
   public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
-    return $this->assertEqual(_autologout_get_user_timeout($uid), $expected_timeout, $message, $group);
+    return $this->assertEqual(\Drupal::service('autologout.manager')->autologoutGetUserTimeout($uid), $expected_timeout, $message, $group);
   }
 }
 

@@ -35,7 +35,7 @@ class AutologoutBlockForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $markup = autologout_create_timer();
+    $markup = \Drupal::service('autologout.manager')->autologoutCreateTimer();
 
     $form['autologout_reset'] = array(
       '#type' => 'button',
