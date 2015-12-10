@@ -9,20 +9,20 @@ autologout.set_admin:
 autologout.ahah_logout:
   path: '/autologout_ahah_logout'
   defaults:
-    _controller: '\Drupal\autologout\Controller\AutologoutController::AhahLogout'
+    _controller: '\Drupal\autologout\Controller\AutologoutController::ahahLogout'
   requirements:
     _user_is_logged_in: 'TRUE'
 
 autologout.ahah_set_last:
   path: '/autologout_ahah_set_last'
   defaults:
-    _controller: '\Drupal\autologout\Controller\AutologoutController::AhahSetLast'
+    _controller: '\Drupal\autologout\Controller\AutologoutController::ahahSetLast'
   requirements:
     _user_is_logged_in: 'TRUE'
 
 autologout.ajax_get_time_left:
   path: '/autologout_ajax_get_time_left'
   defaults:
-    _controller: '\Drupal\autologout\Controller\AutologoutController::AhahGetRemainingTime'
+    _controller: '\Drupal\autologout\Controller\AutologoutController::ahahGetRemainingTime'
   requirements:
     _user_is_logged_in: 'TRUE'

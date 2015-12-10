@@ -19,7 +19,7 @@ class AutologoutController extends ControllerBase {
   /**
    * AJAX callback that performs the actual logout and redirects the user.
    */
-  public function AhahLogout() {
+  public function ahahLogout() {
     \Drupal::service('autologout.manager')->autologoutLogout();
     $url = Url::fromRoute('user.login');
     return new RedirectResponse($url->toString());
@@ -28,7 +28,7 @@ class AutologoutController extends ControllerBase {
   /**
    * Ajax callback to reset the last access session variable.
    */
-  public function AhahSetLast() {
+  public function ahahSetLast() {
     $_SESSION['autologout_last'] = REQUEST_TIME;
 
     // Reset the timer.
@@ -42,7 +42,7 @@ class AutologoutController extends ControllerBase {
   /**
    * AJAX callback that returns the time remaining for this user is logged out.
    */
-  public function AhahGetRemainingTime() {
+  public function ahahGetRemainingTime() {
     $autologout_manager = \Drupal::service('autologout.manager');
     $time_remaining_ms = $autologout_manager->autologoutGetRemainingTime() * 1000;
 
