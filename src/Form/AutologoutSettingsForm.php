@@ -147,14 +147,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $form['table'][] = array(
         'autologout_role_' . $key => array(
           '#type' => 'checkbox',
-          '#default_value' => $config->get('autologout_role_' . $key),
+          '#default_value' => $config->get('role_' . $key),
         ),
         'autologout_role' => array(
           '#markup' => $key,
         ),
         'autologout_role_' . $key . '_timeout' => array(
           '#type' => 'textfield',
-          '#default_value' => $config->get('autologout_role_' . $key . '_timeout'),
+          '#default_value' => $config->get('role_' . $key . '_timeout'),
           '#size' => 8,
         ),
       );
