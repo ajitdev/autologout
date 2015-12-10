@@ -1,7 +1,7 @@
 <?php
 namespace Drupal\autologout;
 
-use Drupal\autologout\AutologoutHelperInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -13,10 +13,20 @@ use Drupal\Core\Session\AnonymousUserSession;
 class AutologoutManager implements AutologoutManagerInterface {
 
   /**
+   * Constructs a \Drupal\Core\Autologout\AutologoutManager object.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
+   */
+
+  public function __construct(ModuleHandlerInterface $module_handler) {
+    $this->moduleHandler = $module_handler;
+  }
+  /**
    * {@inheritdoc}
    */
   function autologoutPreventJs() {
-    foreach (\Drupal::moduleHandler()->invokeAll('autologout_prevent') as $prevent) {
+    foreach ($this->moduleHandler->invokeAll('autologout_prevent') as $prevent) {
       if (!empty($prevent)) {
         return TRUE;
       }
@@ -28,7 +38,7 @@ class AutologoutManager implements AutologoutManagerInterface {
    * {@inheritdoc}
    */
   function autologoutRefreshOnly() {
-    foreach (\Drupal::moduleHandler()->invokeAll('autologout_refresh_only') as $module_refresh_only) {
+    foreach ($this->moduleHandler->invokeAll('autologout_refresh_only') as $module_refresh_only) {
       if (!empty($module_refresh_only)) {
         return TRUE;
       }
@@ -58,7 +68,7 @@ class AutologoutManager implements AutologoutManagerInterface {
     }
 
     // Destroy the current session.
-    \Drupal::moduleHandler()->invokeAll('user_logout', array($user));
+    $this->moduleHandler->invokeAll('user_logout', array($user));
     \Drupal::service('session_manager')->destroy();
     $user->setAccount(new AnonymousUserSession());
 
