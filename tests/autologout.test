@@ -179,6 +179,7 @@ class AutologoutTestSessionCleanupOnLogin extends DrupalWebTestCase {
     $this->cookieFile = $this->public_files_directory . '/' . $this->randomName() . '.jar';
     unset($this->curlHandle);
   }
+
 }
 
 /**
@@ -476,6 +477,7 @@ class AutologoutTestCase extends DrupalWebTestCase {
   public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
     return $this->assertEqual(\Drupal::service('autologout.manager')->autologoutGetUserTimeout($uid), $expected_timeout, $message, $group);
   }
+
 }
 
 /**
@@ -589,4 +591,5 @@ class AutologoutAjaxTestCase extends DrupalWebTestCase {
     $result = json_decode($result);
     $this->assertEqual($result[1]->command, 'alert', t('When logged out, autologout_ajax_set_last returns the normal Drupal ajax alert.'));
   }
+
 }

@@ -5,6 +5,8 @@
  */
 
 namespace Drupal\autologout\EventSubscriber;
+
+use Drupal\autologout\AutologoutManagerInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -12,10 +14,30 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class AutologoutSubscriber implements EventSubscriberInterface {
 
   /**
+   * The autologout manager service.
+   *
+   * @var \Drupal\autologout\AutologoutManagerInterface
+   */
+  protected $autoLogoutManager;
+
+  /**
+   * Constructs a new \Drupal\autologout\EventSubscriber\AutologoutSubscriber object.
+   *
+   * @param \Drupal\autologout\AutologoutManagerInterface $autologout
+   *    The autologout manager service.
+   */
+  public function __construct(AutologoutManagerInterface $autologout) {
+    $this->autoLogoutManager = $autologout;
+  }
+
+  /**
+   * Check for autologout JS.
+   *
    * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
+   *   The request event.
    */
   public function checkForAutologoutjs(GetResponseEvent $event) {
-    if (\Drupal::service('autologout.manager')->autologoutPreventJs()) {
+    if ($this->autoLogoutManager->autologoutPreventJs()) {
       return;
     }
   }

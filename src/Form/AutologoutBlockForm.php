@@ -7,22 +7,22 @@
 
 namespace Drupal\autologout\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
+use Drupal\autologout\AutologoutManagerInterface;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a settings for autologout modle.
+ * Provides a settings for autologout module.
  */
-class AutologoutBlockForm extends ConfigFormBase {
+class AutologoutBlockForm extends FormBase {
 
   /**
-   * {@inheritdoc}
+   * The autologout manager service.
+   *
+   * @var \Drupal\autologout\AutologoutManagerInterface
    */
-  public function getEditableConfigNames() {
-    return [
-      'autologout.settings',
-    ];
-  }
+  protected $autoLogoutManager;
 
   /**
    * {@inheritdoc}
@@ -32,11 +32,28 @@ class AutologoutBlockForm extends ConfigFormBase {
   }
 
   /**
+   * Constructs a new \Drupal\autologout\Form\AutologoutBlockForm object.
+   *
+   * @param \Drupal\autologout\AutologoutManagerInterface $autologout
+   *    The autologout manager service.
+   */
+  public function __construct(AutologoutManagerInterface $autologout) {
+    $this->autoLogoutManager = $autologout;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('autologout.manager')
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $markup = \Drupal::service('autologout.manager')->autologoutCreateTimer();
-
     $form['autologout_reset'] = array(
       '#type' => 'button',
       '#value' => t('Reset Timeout'),
@@ -49,9 +66,17 @@ class AutologoutBlockForm extends ConfigFormBase {
     );
 
     $form['timer'] = array(
-      '#markup' => $markup,
+      '#markup' => $this->autoLogoutManager->autologoutCreateTimer(),
     );
+
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Submits on block form.
   }
 
 }

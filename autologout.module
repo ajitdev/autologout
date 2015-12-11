@@ -1,9 +1,8 @@
 <?php
 
 use Drupal\Core\Url;
-use Drupal\user\Entity\User;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AnonymousUserSession;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * @file
@@ -13,22 +12,20 @@ use Drupal\Core\Session\AnonymousUserSession;
 /**
  * Implements hook_help().
  */
-function autologout_help($path, $arg) {
-  $seconds = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
-  $message = NULL;
-
-  switch ($path) {
-    case 'admin/help#autologout':
-      $message = '<p>' . t("This module allows you to force site users to be logged out after a given amount of time due to inactivity after first being presented with a confirmation dialog. Your current logout threshold is %seconds seconds.", array('%seconds' => $seconds)) . '</p>';
-      break;
+function autologout_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.autologout':
+      $seconds = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t("This module allows you to force site users to be logged out after a given amount of time due to inactivity after first being presented with a confirmation dialog. Your current logout threshold is %seconds seconds.", array('%seconds' => $seconds)) . '</p>';
+      return $output;
   }
-
-  return $message;
 }
 
 /**
  * Checks to see if timeout threshold is outside max/min values. Only done here
- * to centrilize and stop repeated code. Hard coded min, configurable max.
+ * to centralize and stop repeated code. Hard coded min, configurable max.
  *
  * @param int $timeout
  *   The timeout value in seconds to validate.
@@ -45,13 +42,13 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
     $max_timeout = \Drupal::config('autologout.settings')->get('max_timeout');
   }
   if (!is_numeric($timeout) || $timeout < 0 || ($timeout > 0 && $timeout < 60) || $timeout > $max_timeout) {
-    // Less then 60, greater then max_timeout and is numeric.
+    // Less than 60, greater than max_timeout and is numeric.
     // 0 is allowed now as this means no timeout.
     $validate = FALSE;
   }
+
   return $validate;
 }
-
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -59,26 +56,21 @@ function autologout_timeout_validate($timeout, $max_timeout = NULL) {
  * Adds a field to user/edit to change that users logout.
  */
 function autologout_form_user_form_alter(&$form, FormStateInterface $form_state) {
-
-  $user_timeout = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
   $user = \Drupal::currentUser();
-
-
-  $current_uid = $user->id();
-  $userid = $form_state->getFormObject()->getEntity()->id();
+  $user_id = $form_state->getFormObject()->getEntity()->id();
   $access = FALSE;
 
   // If user has access to change, and they are changing their own and only
-  // thier own timeout. Or they are an admin.
-  if (($user->hasPermission('change own logout threshold') && $current_uid == $userid) || $user->hasPermission('administer autologout')) {
+  // their own timeout. Or they are an admin.
+  if (($user->hasPermission('change own logout threshold') && $user->id() == $user_id) || $user->hasPermission('administer autologout')) {
     $access = TRUE;
   }
 
   if ($access) {
-    $form['autologout_user_' . $userid] = array(
+    $form['autologout_user_' . $user_id] = array(
       '#type' => 'textfield',
       '#title' => t('Your current logout threshold'),
-      '#default_value' => \Drupal::config('autologout.settings')->get('user_' . $userid),
+      '#default_value' => \Drupal::config('autologout.settings')->get('user_' . $user_id),
       '#size' => 8,
       '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
       '#element_validate' => array('_autologout_user_uid_timeout_validate'),
@@ -88,7 +80,6 @@ function autologout_form_user_form_alter(&$form, FormStateInterface $form_state)
   }
 }
 
-
 /**
  * Form validation.
  */
@@ -96,33 +87,30 @@ function _autologout_user_uid_timeout_validate($element, FormStateInterface $for
   $max_timeout = \Drupal::config('autologout.settings')->get('max_timeout');
   $timeout = $element['#value'];
 
-  // Set error if it has a value that isnt strictly a number between 60 and max.
+  // Set error if it has a value that isn't strictly a number between 60 and max.
   if ($timeout != "" && ($timeout < 10 || ($timeout > 0 && $timeout < 60) || $timeout > $max_timeout || !is_numeric($timeout))) {
     $form_state->setError($element, t('The timeout must be an integer greater than 60, and less then %max.', array('%max' => $max_timeout)));
   }
 }
-
 
 /**
  * Handle submission of timeout threshold in user/edit.
  */
 function autologout_user_profile_submit(&$form, FormStateInterface $form_state) {
   $user = \Drupal::currentUser();
-  $current_uid = $user->id();
-  $userid = $form_state->getFormObject()->getEntity()->id();
+  $user_id = $form_state->getFormObject()->getEntity()->id();
   $access = FALSE;
 
-  if (($user->hasPermission('change own logout threshold') && $current_uid == $userid) || $user->hasPermission('administer autologout')) {
+  if (($user->hasPermission('change own logout threshold') && $user->id() == $user_id) || $user->hasPermission('administer autologout')) {
     $access = TRUE;
   }
 
   // Access is reused here as a security measure. Not only will the element not
-  // display but wont sumbit without access.
+  // display but wont submit without access.
   if ($access) {
-    \Drupal::configFactory()->getEditable('autologout.settings')->set('user_' . $userid, $form_state->getValue('user_' . $userid))->save();
+    \Drupal::configFactory()->getEditable('autologout.settings')->set('user_' . $user_id, $form_state->getValue('user_' . $user_id))->save();
   }
 }
-
 
 /**
  * Implements hook_autologout_prevent().
@@ -154,18 +142,14 @@ function autologout_autologout_prevent() {
   }
 }
 
-
 /**
  * Implements hook_autologout_refresh_only().
  */
 function autologout_autologout_refresh_only() {
-  $url = Url::fromRoute('<current>');
-  $route = explode('/', $url->toString());
   if (!\Drupal::config('autologout.settings')->get('enforce_admin') && \Drupal::service('router.admin_context')->isAdminRoute(\Drupal::routeMatch()->getRouteObject())) {
     return TRUE;
   }
 }
-
 
 /**
  * Implements hook_page_attachments().
@@ -177,10 +161,8 @@ function autologout_autologout_refresh_only() {
  * loaded from cache and an autologout timeout refresh needs to be triggered.
  */
 function autologout_page_attachments(array &$page) {
-  $user = \Drupal::currentUser();
-  $uid = $user->id();
   $autologout_manager = \Drupal::service('autologout.manager');
-  if ($uid == 0) {
+  if (\Drupal::currentUser()->id() == 0) {
     if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
       $autologout_manager->autologoutInactivityMessage();
     }
@@ -189,34 +171,30 @@ function autologout_page_attachments(array &$page) {
 
   // Check if JS should be included on this request.
   if ($autologout_manager->autologoutPreventJs()) {
-
     return;
   }
 
-  // Check if anything wants to be refresh only. This URL would
-  // include the javascript but will keep the login alive whilst
-  // that page is opened.
+  // Check if anything wants to be refresh only. This URL would include the
+  // javascript but will keep the login alive whilst that page is opened.
   $refresh_only = $autologout_manager->autologoutRefreshOnly();
-
   $now = REQUEST_TIME;
+  $settings = \Drupal::config('autologout.settings');
 
   $timeout = $autologout_manager->autologoutGetUserTimeout();
-
-  $timeout_padding = \Drupal::config('autologout.settings')->get('padding');
-  $redirect_url = \Drupal::config('autologout.settings')->get('redirect_url');
+  $timeout_padding = $settings->get('padding');
+  $redirect_url = $settings->get('redirect_url');
   $redirect_query = \Drupal::service('redirect.destination')->getAsArray() + array('timeout' => 1);
-  $no_dialog = \Drupal::config('autologout.settings')->get('no_dialog');
-  $use_alt_logout_method = \Drupal::config('autologout.settings')->get('use_alt_logout_method');
-
+  $no_dialog = $settings->get('no_dialog');
+  $use_alt_logout_method = $settings->get('use_alt_logout_method');
 
   // Get all settings JS will need for dialog.
-  $msg = t('@msg', array('@msg' => \Drupal::config('autologout.settings')->get('message')));
+  $msg = t('@msg', array('@msg' => $settings->get('message')));
   $settings = array(
     'timeout' => $refresh_only ? ($timeout * 500) : ($timeout * 1000),
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
     'redirect_url' => Url::fromUserInput($redirect_url, array('query' => $redirect_query))->toString(),
-    'title' => t('@name Alert', array('@name' => \Drupal::config('autologout.settings')->get('site_name'))),
+    'title' => t('@name Alert', array('@name' => \Drupal::config('system.site')->get('name'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
@@ -258,6 +236,7 @@ function autologout_page_bottom() {
     ];
   }
 }
+
 /**
  * Adds the necessary js and libraries.
  *
