@@ -199,16 +199,17 @@ class AutologoutSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $max_timeout = $form_state->getValue('autologout_max_timeout');
+    $values = $form_state->getValues();
+    $max_timeout = $values['autologout_max_timeout'];
 
     // Validate timeouts for each role.
     foreach (user_roles(TRUE) as $key => $role) {
-      if (empty($form_state->getValue('autologout_role_' . $key))) {
+      if (empty($values['autologout_role_' . $key])) {
         // Don't validate role timeouts for non enabled roles.
         continue;
       }
 
-      $timeout = $form_state->getValue('autologout_role_' . $key . '_timeout');
+      $timeout = $values['autologout_role_' . $key . '_timeout'];
       $validate = autologout_timeout_validate($timeout, $max_timeout);
 
       if (!$validate) {
@@ -216,14 +217,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
       }
     }
 
-    $timeout = $form_state->getValue('autologout_timeout');
+    $timeout = $values['autologout_timeout'];
 
     // Validate timeout.
     if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
       $form_state->setErrorByName('timeout', $this->t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
     }
 
-    $autologout_redirect_url = $form_state->getValue('autologout_redirect_url');
+    $autologout_redirect_url = $values['autologout_redirect_url'];
 
     // Validate redirect url.
     if (strpos($autologout_redirect_url, '/') !== 0) {

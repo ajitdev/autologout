@@ -194,7 +194,7 @@ function autologout_page_attachments(array &$page) {
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
     'redirect_url' => Url::fromUserInput($redirect_url, array('query' => $redirect_query))->toString(),
-    'title' => t('@name Alert', array('@name' => $settings->get('site_name'))),
+    'title' => t('@name Alert', array('@name' => \Drupal::config('system.site')->get('name'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
