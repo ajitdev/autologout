@@ -30,11 +30,11 @@
       // Timer to keep track of activity resets.
       var activityResetTimer;
 
-      // Prevent settings being overriden by ajax callbacks by cloning the settings.
+      // Prevent settings being overridden by ajax callbacks by cloning it.
       localSettings = jQuery.extend(true, {}, settings.autologout);
 
       if (localSettings.refresh_only) {
-        // On pages that cannot be logged out of don't start the logout countdown.
+        // On pages where user shouldn't be logged out, don't set the timer.
         t = setTimeout(keepAlive, localSettings.timeout);
       }
       else {
@@ -64,21 +64,20 @@
         }
 
         $('body').bind('preventAutologout', function(event) {
-          // When the preventAutologout event fires
-          // we set activity to true.
+          // When the preventAutologout event fires, we set activity to true.
           activity = true;
 
           // Clear timer if one exists.
           clearTimeout(activityResetTimer);
 
-          // Set a timer that goes off and resets this activity indicator
-          // after a minute, otherwise sessions never timeout.
+          // Set a timer that goes off and resets this activity indicator after
+          // a minute, otherwise sessions never timeout.
           activityResetTimer = setTimeout(function () {
             activity = false;
           }, 60000);
         });
 
-        // On pages where the user can be logged out, set the timer to popup
+        // On pages where the user should be logged out, set the timer to popup
         // and log them out.
         t = setTimeout(init, localSettings.timeout);
       }
@@ -91,12 +90,12 @@
           refresh();
         }
         else {
-          // The user has not been active, ask them if they want to stay logged in
-          // and start the logout timer.
+          // The user has not been active, ask them if they want to stay logged
+          // in and start the logout timer.
           paddingTimer = setTimeout(confirmLogout, localSettings.timeout_padding);
-          // While the countdown timer is going, lookup the remaining time. If there
-          // is more time remaining (i.e. a user is navigating in another tab), then
-          // reset the timer for opening the dialog.
+          // While the countdown timer is going, lookup the remaining time. If
+          // there is more time remaining (i.e. a user is navigating in another
+          // tab), then reset the timer for opening the dialog.
           Drupal.Ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function (time) {
             if (time > 0) {
               clearTimeout(paddingTimer);
@@ -140,8 +139,8 @@
         });
       }
 
-      // A user could have used the reset button on the tab/window they're actively
-      // using, so we need to double check before actually logging out.
+      // A user could have used the reset button on the tab/window they're
+      // actively using, so we need to double check before actually logging out.
       function confirmLogout() {
         $(theDialog).dialog('destroy');
 
@@ -184,8 +183,9 @@
 
       /**
        * Get the remaining time.
-       *   Use the Drupal ajax library to handle get time remaining events
-       *   because if using the JS Timer, the return will update it.
+       *
+       * Use the Drupal ajax library to handle get time remaining events
+       * because if using the JS Timer, the return will update it.
        *
        * @param function callback(time)
        *   The function to run when ajax is successful. The time parameter
@@ -202,8 +202,7 @@
             response = $.parseJSON(response);
           }
           if (typeof response[0].command === 'string' && response[0].command == 'alert') {
-            // In the event of an error, we can assume
-            // the user has been logged out.
+            // In the event of an error, we can assume user has been logged out.
             window.location = localSettings.redirect_url;
           }
 
@@ -233,13 +232,12 @@
 
       /**
        * Handle refresh event.
-       *   Use the Drupal ajax library to handle refresh events
-       *   because if using the JS Timer, the return will update
-       *   it.
+       *
+       * Use the Drupal ajax library to handle refresh events because if using
+       * the JS Timer, the return will update it.
        *
        * @param function timerFunction
-       *   The function to tell the timer to run after its been
-       *   restarted.
+       *   The function to tell the timer to run after its been restarted.
        */
       Drupal.Ajax.prototype.autologoutRefresh = function(timerfunction) {
         var ajax = this;
@@ -293,10 +291,8 @@
       // Check if the page was loaded via a back button click.
       var $dirty_bit = $('#autologout-cache-check-bit');
       if ($dirty_bit.length !== 0) {
-
         if ($dirty_bit.val() == '1') {
-          // Page was loaded via a back button click, we should
-          // refresh the timer.
+          // Page was loaded via back button click, we should refresh the timer.
           refresh();
         }
 
@@ -304,4 +300,5 @@
       }
     }
   };
+
 })(jQuery, Drupal);

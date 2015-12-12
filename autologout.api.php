@@ -21,7 +21,13 @@
 function hook_autologout_prevent() {
   // Don't include autologout JS checks on ajax callbacks.
   $path_args = explode('/', current_path());
-  if (in_array($path_args[0], array('ajax', 'autologout_ahah_logout', 'autologout_ahah_set_last'))) {
+  $blacklist = [
+    'ajax',
+    'autologout_ahah_logout',
+    'autologout_ahah_set_last',
+  ];
+
+  if (in_array($path_args[0], $blacklist)) {
     return TRUE;
   }
 }
@@ -31,13 +37,12 @@ function hook_autologout_prevent() {
  *
  * @return bool
  *   By returning TRUE from this function the JS which talks to autologout
- *   module is included in the current page request and peridoically dials
- *   back to the server to keep the login alive.
+ *   module is included in the current page request and periodically dials back
+ *   to the server to keep the login alive.
  *   Return FALSE (or nothing) to just use the standard behaviour.
  */
 function hook_autologout_refresh_only() {
-  // Check to see if an open admin page will keep
-  // login alive.
+  // Check to see if an open admin page will keep login alive.
   if (\Drupal::service('router.admin_context')->isAdminRoute(routeMatch()->getRouteObject()) && !\Drupal::config('autologout.settings')->get('enforce_admin')) {
     return TRUE;
   }

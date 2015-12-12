@@ -5,6 +5,7 @@
  */
 
 namespace Drupal\autologout\Controller;
+
 use Drupal\autologout\AutologoutManagerInterface;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -14,7 +15,7 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Controller\ControllerBase;
 
 /**
- * Example page controller.
+ * Returns responses for autologout module routes.
  */
 class AutologoutController extends ControllerBase {
 
@@ -26,10 +27,10 @@ class AutologoutController extends ControllerBase {
   protected $autoLogoutManager;
 
   /**
-   * Constructs a new \Drupal\autologout\EventSubscriber\AutologoutSubscriber object.
+   * Constructs an AutologoutSubscriber object.
    *
    * @param \Drupal\autologout\AutologoutManagerInterface $autologout
-   *    The autologout manager service.
+   *   The autologout manager service.
    */
   public function __construct(AutologoutManagerInterface $autologout) {
     $this->autoLogoutManager = $autologout;

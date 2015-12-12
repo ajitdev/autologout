@@ -26,12 +26,12 @@ class AutologoutSettingsForm extends ConfigFormBase {
   protected $moduleHandler;
 
   /**
-   * Constructs a new \Drupal\autologout\Form\AutologoutSettingsForm object.
+   * Constructs an AutologoutSettingsForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *    The module manager service.
+   *   The module manager service.
    */
   public function __construct(ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler) {
     parent::__construct($config_factory);
