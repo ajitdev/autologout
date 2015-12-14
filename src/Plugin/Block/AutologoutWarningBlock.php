@@ -47,7 +47,7 @@ class AutologoutWarningBlock extends BlockBase implements ContainerFactoryPlugin
   protected $autoLogoutSettings;
 
   /**
-   * Constructs a \Drupal\autologout\Plugin\Block\AutologoutWarningBlock object.
+   * Constructs an AutologoutWarningBlock object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -56,11 +56,11 @@ class AutologoutWarningBlock extends BlockBase implements ContainerFactoryPlugin
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *    The module manager service.
+   *   The module manager service.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
-   *    The date formatter service.
+   *   The date formatter service.
    * @param \Drupal\Core\Config\Config $autologout_settings
-   *    The config object for 'autologout.settings'.
+   *   The config object for 'autologout.settings'.
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, ModuleHandlerInterface $module_handler, DateFormatterInterface $date_formatter, Config $autologout_settings) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);

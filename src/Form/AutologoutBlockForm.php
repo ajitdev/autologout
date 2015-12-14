@@ -32,10 +32,10 @@ class AutologoutBlockForm extends FormBase {
   }
 
   /**
-   * Constructs a new \Drupal\autologout\Form\AutologoutBlockForm object.
+   * Constructs an AutologoutBlockForm object.
    *
    * @param \Drupal\autologout\AutologoutManagerInterface $autologout
-   *    The autologout manager service.
+   *   The autologout manager service.
    */
   public function __construct(AutologoutManagerInterface $autologout) {
     $this->autoLogoutManager = $autologout;

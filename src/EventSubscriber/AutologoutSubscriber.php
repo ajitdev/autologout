@@ -11,6 +11,9 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Defines autologout Subscriber.
+ */
 class AutologoutSubscriber implements EventSubscriberInterface {
 
   /**
@@ -21,10 +24,10 @@ class AutologoutSubscriber implements EventSubscriberInterface {
   protected $autoLogoutManager;
 
   /**
-   * Constructs a new \Drupal\autologout\EventSubscriber\AutologoutSubscriber object.
+   * Constructs an AutologoutSubscriber object.
    *
    * @param \Drupal\autologout\AutologoutManagerInterface $autologout
-   *    The autologout manager service.
+   *   The autologout manager service.
    */
   public function __construct(AutologoutManagerInterface $autologout) {
     $this->autoLogoutManager = $autologout;

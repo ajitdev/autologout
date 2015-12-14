@@ -11,6 +11,9 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\user\Entity\User;
 use Drupal\Core\Session\AnonymousUserSession;
 
+/**
+ * Defines an AutologoutManager service.
+ */
 class AutologoutManager implements AutologoutManagerInterface {
 
   /**
@@ -28,7 +31,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   protected $autoLogoutSettings;
 
   /**
-   * Constructs a \Drupal\Core\Autologout\AutologoutManager object.
+   * Constructs an AutologoutManager object.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
