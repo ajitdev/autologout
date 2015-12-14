@@ -6,6 +6,7 @@ use Drupal\simpletest\WebTestBase;
  * Test session cleanup on login.
  *
  * @description Ensure that the autologout module cleans up stale sessions at login
+ *
  * @group autologout
  */
 
@@ -15,7 +16,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('autologout');
+  public static $modules = array('autologout','node');
   /**
   * A store references to different sessions.
   */
@@ -28,7 +29,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   public function setUp() {
     parent::setUp();
   // Create and log in our privileged user.
-  $this->privileged_user = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
+  $this->privileged_user = $this->drupalCreateUser(array('access content overview', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
   }
 
   /**
@@ -36,7 +37,8 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   */
   public function testSessionCleanupAtLogin() {
   // For the purposes of the test, set the timeout periods to 5 seconds.
-    $autologout_settings = \Drupal::config('autologout.settings');
+
+    $autologout_settings = \Drupal::configFactory()->getEditable('autologout.settings');
     $autologout_settings->set('timeout', 5)
     ->set('padding', 0)
     ->save();
@@ -124,7 +126,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
 
   // Set a new unique cookie filename.
   do {
-  $this->cookieFile = $this->public_files_directory . '/' . $this->randomName() . '.jar';
+  $this->cookieFile = $this->public_files_directory . '/' . $this->randomMachineName() . '.jar';
   }
   while (isset($this->curlHandles[$this->cookieFile]));
 
@@ -172,7 +174,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   $this->curlHandles = array();
   $this->loggedInUsers = array();
   $this->loggedInUser = FALSE;
-  $this->cookieFile = $this->public_files_directory . '/' . $this->randomName() . '.jar';
+  $this->cookieFile = $this->public_files_directory . '/' . $this->randomMachineName() . '.jar';
   unset($this->curlHandle);
   }
 
