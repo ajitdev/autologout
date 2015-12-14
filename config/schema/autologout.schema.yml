@@ -1,0 +1,36 @@
+autologout.settings:
+  type: config_object
+  mapping:
+    timeout:
+      type: integer
+      label: 'label'
+    max_timeout:
+      type: integer
+      label: 'label'
+    padding:
+      type: integer
+      label: 'label'
+    role_logout:
+      type: boolean
+      label: 'Boolean label'
+    redirect_url:
+      type: string
+      label: 'string label'
+    no_dialog:
+      type: integer
+      label: 'Integer label'
+    message:
+      type: string
+      label: 'string label'
+    inactivity_message:
+      type: string
+      label: 'string label'
+    enforce_admin:
+      type: boolean
+      label: 'Boolean label'
+    jstimer_format:
+      type: string
+      label: 'string label'
+    jstimer_js_load_option:
+      type: integer
+      label: 'integer label'
