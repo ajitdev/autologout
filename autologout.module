@@ -4,6 +4,11 @@
  * @file
  * Automatically logout users after specified period of inactivity.
  */
+
+use Drupal\Core\Url;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
 /**
  * Implements hook_help().
  */
