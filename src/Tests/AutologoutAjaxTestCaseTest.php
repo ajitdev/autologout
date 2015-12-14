@@ -21,7 +21,7 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('autologout');
+  public static $modules = array('autologout','node','user');
 
   /**
    * User with admin rights.
@@ -54,7 +54,8 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
    * Test ajax logout callbacks work as expected.
    */
   public function testAutologoutByAjax() {
-    $autologout_settings = \Drupal::config('autologout.settings');
+
+    $autologout_settings = \Drupal::configFactory()->getEditable('autologout.settings');
     $autologout_settings->set('timeout', 100)
       ->set('padding', 10)
       ->save();

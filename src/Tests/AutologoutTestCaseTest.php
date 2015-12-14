@@ -15,7 +15,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('autologout');
+  public static $modules = array('autologout','user','node');
   /**
   * User with admin rights.
   */
@@ -27,11 +27,12 @@ class AutologoutTestCaseTest extends WebTestBase {
   public function setUp() {
     parent::setUp();
   // Create and log in our privileged user.
-  $this->privileged_user = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
-  $this->drupalLogin($this->privileged_user);
+    $this->privileged_user = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
+    $this->drupalLogin($this->privileged_user);
+
 
   // For the purposes of the test, set the timeout periods to 10 seconds.
-    $autologout_settings = \Drupal::config('autologout.settings');
+    $autologout_settings = \Drupal::configFactory()->getEditable('autologout.settings');
     $autologout_settings->set('timeout', 10)
     ->save();
 
