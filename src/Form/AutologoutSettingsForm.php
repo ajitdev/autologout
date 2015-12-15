@@ -177,14 +177,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
 
     foreach (user_roles(TRUE) as $key => $role) {
       $form['table'][] = array(
-        'autologout_role_' . $key => array(
+        'role_' . $key => array(
           '#type' => 'checkbox',
           '#default_value' => $config->get('role_' . $key),
         ),
-        'autologout_role' => array(
+        'role' => array(
           '#markup' => $key,
         ),
-        'autologout_role_' . $key . '_timeout' => array(
+        'role_' . $key . '_timeout' => array(
           '#type' => 'textfield',
           '#default_value' => $config->get('role_' . $key . '_timeout'),
           '#size' => 8,
@@ -200,18 +200,24 @@ class AutologoutSettingsForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
+    $new_stack = [];
+    foreach ($values['table'] as $key => $pair) {
+      if (is_array($pair)) {
+        foreach ($pair as $pairkey => $pairvalue) {
+          $new_stack[$pairkey] = $pairvalue;
+        }
+      }
+    }
     $max_timeout = $values['autologout_max_timeout'];
-
     // Validate timeouts for each role.
     foreach (user_roles(TRUE) as $key => $role) {
-      if (empty($values['autologout_role_' . $key])) {
+      if (empty($new_stack['role_' . $key])) {
         // Don't validate role timeouts for non enabled roles.
         continue;
       }
 
-      $timeout = $values['autologout_role_' . $key . '_timeout'];
+      $timeout = $new_stack['role_' . $key . '_timeout'];
       $validate = autologout_timeout_validate($timeout, $max_timeout);
-
       if (!$validate) {
         $form_state->setErrorByName('role_' . $key . '_timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
       }
