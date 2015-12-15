@@ -55,8 +55,8 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
    */
   public function testAutologoutByAjax() {
 
-    $autologout_settings = \Drupal::configFactory()->getEditable('autologout.settings');
-    $autologout_settings->set('timeout', 100)
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
+    $config->set('timeout', 100)
       ->set('padding', 10)
       ->save();
 
@@ -96,8 +96,8 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
    * Test ajax stay logged in callbacks work as expected.
    */
   public function testStayloggedInByAjax() {
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('timeout', 20)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('timeout', 20)
       ->set('padding', 5)
       ->save();
 

@@ -35,8 +35,8 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->drupalLogin($this->privilegedUser);
 
     // For the purposes of the test, set the timeout periods to 10 seconds.
-    $autologout_settings = \Drupal::configFactory()->getEditable('autologout.settings');
-    $autologout_settings->set('timeout', 10)
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
+    $config->set('timeout', 10)
       ->save();
 
   }
@@ -84,8 +84,8 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutSettingsForm() {
     $edit = array();
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('max_timeout', 1000)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('max_timeout', 1000)
       ->save();
 
     // Test that it is possible to set a value above the max_timeout
@@ -138,26 +138,26 @@ class AutologoutTestCaseTest extends WebTestBase {
     $_GET['q'] = 'admin';
 
     // Check if user will be kept logged in on admin paths with enforce dsabled.
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('enforce_admin', FALSE)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('enforce_admin', FALSE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), TRUE, t('Autologout does logout of admin pages without enforce on admin checked.'));
 
     // Check if user will not be kept logged in on admin paths if enforce enabled.
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('enforce_admin', TRUE)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('enforce_admin', TRUE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('Autologout does not logout of admin pages with enforce on admin not checked.'));
 
     // Set a non admin page path.
     $_GET['q'] = 'node';
 
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('enforce_admin', FALSE)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('enforce_admin', FALSE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.'));
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('enforce_admin', TRUE)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('enforce_admin', TRUE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.'));
   }
@@ -167,8 +167,8 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutDefaultTimeoutAccessDeniedToAdmin() {
     // Enforce auto logout of admin pages.
-    $autologout_settings = \Drupal::config('autologout.settings');
-    $autologout_settings->set('enforce_admin', FALSE)
+    $config = \Drupal::config('autologout.settings');
+    $config->set('enforce_admin', FALSE)
       ->save();
 
     // Check that the user can access the page after login.

@@ -40,8 +40,8 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
    */
   public function testSessionCleanupAtLogin() {
     // For the purposes of the test, set the timeout periods to 5 seconds.
-    $autologout_settings = \Drupal::configFactory()->getEditable('autologout.settings');
-    $autologout_settings->set('timeout', 5)
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
+    $config->set('timeout', 5)
       ->set('padding', 0)
       ->save();
 
