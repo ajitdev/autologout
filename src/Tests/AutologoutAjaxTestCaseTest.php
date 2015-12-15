@@ -12,29 +12,29 @@ use Drupal\simpletest\WebTestBase;
  * Test the Autologout ajax endpoints.
  *
  * @description Ensure the AJAX endpoints work as expected
+ *
  * @group autologout
  */
-
 class AutologoutAjaxTestCaseTest extends WebTestBase {
   /**
    * Modules to enable.
    *
    * @var array
    */
-  public static $modules = array('autologout','node','user');
+  public static $modules = array('autologout', 'node', 'user');
 
   /**
    * User with admin rights.
    */
-  protected $privileged_user;
+  protected $privilegedUser;
 
   /**
-   * setUp() performs any pre-requisite tasks that need to happen.
+   * SetUp() performs any pre-requisite tasks that need to happen.
    */
   public function setUp() {
     parent::setUp();
     // Create and log in our privileged user.
-    $this->privileged_user = $this->drupalCreateUser(array(
+    $this->privilegedUser = $this->drupalCreateUser(array(
       'access content',
       'administer site configuration',
       'access site reports',
@@ -46,7 +46,7 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
       'change own logout threshold',
     ));
 
-    $this->drupalLogin($this->privileged_user);
+    $this->drupalLogin($this->privilegedUser);
 
   }
 
@@ -59,7 +59,6 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
     $autologout_settings->set('timeout', 100)
       ->set('padding', 10)
       ->save();
-
 
     // Check that the user can access the page after login.
     $this->drupalGet('node');
@@ -101,7 +100,6 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
     $autologout_settings->set('timeout', 20)
       ->set('padding', 5)
       ->save();
-
 
     // Check that the user can access the page after login.
     $this->drupalGet('node');
