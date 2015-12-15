@@ -201,9 +201,9 @@ class AutologoutSettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $new_stack = [];
-    foreach($values['table'] as $key => $pair) {
-      if(is_array($pair)) {
-        foreach($pair as $pairkey => $pairvalue) {
+    foreach ($values['table'] as $key => $pair) {
+      if (is_array($pair)) {
+        foreach ($pair as $pairkey => $pairvalue) {
           $new_stack[$pairkey] = $pairvalue;
         }
       }
@@ -219,7 +219,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       $timeout = $new_stack['role_' . $key . '_timeout'];
       $validate = autologout_timeout_validate($timeout, $max_timeout);
       if (!$validate) {
-        $form_state->setErrorByName('role_' . $key . '_timeout', $this->t('!role role timeout must be an integer greater than 60, less then !max or 0 to disable autologout for that role.', array('!role' => $key, '!max' => $max_timeout)));
+        $form_state->setErrorByName('role_' . $key . '_timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
       }
     }
 
