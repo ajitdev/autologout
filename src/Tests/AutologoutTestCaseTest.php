@@ -26,6 +26,11 @@ class AutologoutTestCaseTest extends WebTestBase {
   protected $privilegedUser;
 
   /**
+   * The config object for 'autologout.settings'.
+   */
+  protected $config;
+
+  /**
    * SetUp() performs any pre-requisite tasks that need to happen.
    */
   public function setUp() {
@@ -33,10 +38,9 @@ class AutologoutTestCaseTest extends WebTestBase {
     // Create and log in our privileged user.
     $this->privilegedUser = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
     $this->drupalLogin($this->privilegedUser);
-
+    $this->config = \Drupal::configFactory()->getEditable('autologout.settings');
     // For the purposes of the test, set the timeout periods to 10 seconds.
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('timeout', 10)
+    $this->config->set('timeout', 10)
       ->save();
 
   }
@@ -49,11 +53,8 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutTimeoutPrecedence() {
     $uid = $this->privilegedUser->uid;
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-
-
     // Default used if no role is specified.
-    $config->set('timeout', 100)
+    $this->config->set('timeout', 100)
       ->set('role_logout', FALSE)
       ->set('role_authenticated', FALSE)
       ->set('role_authenticated_timeout', 200)
@@ -61,28 +62,28 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->assertAutotimeout($uid, 100, t('User timeout uses default if no other option set'));
 
     // Default used if role selected but no user's role is selected.
-    $config->set('role_logout', TRUE)
+    $this->config->set('role_logout', TRUE)
       ->set('role_authenticated', FALSE)
       ->set('role_authenticated_timeout', 200)
       ->save();
     $this->assertAutotimeout($uid, 100, t('User timeout uses default if  role timeouts are used but not one of the current user.'));
 
     // Role timeout is used if user's role is selected.
-    $config->set('role_logout', TRUE)
+    $this->config->set('role_logout', TRUE)
       ->set('role_authenticated', TRUE)
       ->set('role_authenticated_timeout', 200)
       ->save();
     $this->assertAutotimeout($uid, 200, t('User timeout uses role value'));
 
     // Role timeout is used if user's role is selected.
-    $config->set('role_logout', TRUE)
+    $this->config->set('role_logout', TRUE)
       ->set('role_authenticated', TRUE)
       ->set('role_authenticated_timeout', 0)
       ->save();
     $this->assertAutotimeout($uid, 0, t('User timeout uses role value of 0 if set for one of the user roles.'));
 
     // Role timeout used if personal timeout is empty string.
-    $config->set('role_logout', TRUE)
+    $this->config->set('role_logout', TRUE)
       ->set('role_authenticated', TRUE)
       ->set('role_authenticated_timeout', 200)
       ->set('user_' . $uid, '')
@@ -90,7 +91,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->assertAutotimeout($uid, 200, t('User timeout uses role value if personal value is the empty string.'));
 
     // Default timeout used if personal timeout is empty string.
-    $config->set('role_logout', TRUE)
+    $this->config->set('role_logout', TRUE)
       ->set('role_authenticated', FALSE)
       ->set('role_authenticated_timeout', 200)
       ->set('user_' . $uid, '')
@@ -98,7 +99,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->assertAutotimeout($uid, 100, t('User timeout uses default value if personal value is the empty string and no role timeout is specified.'));
 
     // Personal timeout used if set.
-    $config->set('role_logout', TRUE)
+    $this->config->set('role_logout', TRUE)
       ->set('role_authenticated', FALSE)
       ->set('role_authenticated_timeout', 200)
       ->set('user_' . $uid, 300)
@@ -149,8 +150,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutSettingsForm() {
     $edit = array();
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('max_timeout', 1000)
+    $this->config->set('max_timeout', 1000)
       ->save();
 
     // Test that it is possible to set a value above the max_timeout
@@ -203,26 +203,22 @@ class AutologoutTestCaseTest extends WebTestBase {
     $_GET['q'] = 'admin';
 
     // Check if user will be kept logged in on admin paths with enforce dsabled.
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('enforce_admin', FALSE)
+    $this->config->set('enforce_admin', FALSE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), TRUE, t('Autologout does logout of admin pages without enforce on admin checked.'));
 
     // Check if user will not be kept logged in on admin paths if enforce enabled.
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('enforce_admin', TRUE)
+    $this->config->set('enforce_admin', TRUE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('Autologout does not logout of admin pages with enforce on admin not checked.'));
 
     // Set a non admin page path.
     $_GET['q'] = 'node';
 
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('enforce_admin', FALSE)
+    $this->config->set('enforce_admin', FALSE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.'));
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('enforce_admin', TRUE)
+    $this->config->set('enforce_admin', TRUE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.'));
   }
@@ -232,8 +228,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutDefaultTimeoutAccessDeniedToAdmin() {
     // Enforce auto logout of admin pages.
-    $config = \Drupal::configFactory()->getEditable('autologout.settings');
-    $config->set('enforce_admin', FALSE)
+    $this->config->set('enforce_admin', FALSE)
       ->save();
 
     // Check that the user can access the page after login.

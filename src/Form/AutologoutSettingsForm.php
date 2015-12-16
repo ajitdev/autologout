@@ -208,7 +208,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
    * @return bool
    *    Return TRUE or FALSE
    */
-  public function autologout_timeout_validate($timeout, $max_timeout = NULL) {
+  public function autologoutTimeoutValidate($timeout, $max_timeout = NULL) {
     $validate = TRUE;
     if (is_null($max_timeout)) {
       $max_timeout = \Drupal::config('autologout.settings')->get('max_timeout');
@@ -243,7 +243,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       }
 
       $timeout = $new_stack['role_' . $key . '_timeout'];
-      $validate = $this->autologout_timeout_validate($timeout, $max_timeout);
+      $validate = $this->autologoutTimeoutValidate($timeout, $max_timeout);
       if (!$validate) {
         $form_state->setErrorByName('role_' . $key . '_timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
       }
