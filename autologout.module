@@ -40,7 +40,7 @@ function autologout_form_user_form_alter(&$form, FormStateInterface $form_state)
   }
 
   if ($access) {
-    $form['autologout_user_' . $user_id] = array(
+    $form['user_' . $user_id] = array(
       '#type' => 'textfield',
       '#title' => t('Your current logout threshold'),
       '#default_value' => \Drupal::config('autologout.settings')->get('user_' . $user_id),
