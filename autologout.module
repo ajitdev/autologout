@@ -24,35 +24,6 @@ function autologout_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
- * Validate timeout range.
- *
- * Checks to see if timeout threshold is outside max/min values. Only done here
- * to centralize and stop repeated code. Hard coded min, configurable max.
- *
- * @param int $timeout
- *   The timeout value in seconds to validate.
- * @param int $max_timeout
- *   (optional) Maximum value of timeout. If not set, system default is used.
- *
- * @return bool
- *    Return TRUE or FALSE
- */
-function autologout_timeout_validate($timeout, $max_timeout = NULL) {
-  $validate = TRUE;
-  if (is_null($max_timeout)) {
-    $max_timeout = \Drupal::config('autologout.settings')->get('max_timeout');
-  }
-
-  if (!is_numeric($timeout) || $timeout < 0 || ($timeout > 0 && $timeout < 60) || $timeout > $max_timeout) {
-    // Less than 60, greater than max_timeout and is numeric.
-    // 0 is allowed now as this means no timeout.
-    $validate = FALSE;
-  }
-
-  return $validate;
-}
-
-/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Adds a field to user/edit to change that users logout.
@@ -202,7 +173,7 @@ function autologout_page_attachments(array &$page) {
     'use_alt_logout_method' => $use_alt_logout_method,
   );
 
-  autologaut_attach_js($page, $settings, TRUE);
+  autologout_attach_js($page, $settings, TRUE);
 
   // We need a backup plan if JS is disabled.
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
@@ -247,7 +218,7 @@ function autologout_page_bottom() {
  * @param array $settings
  *   The JS Settings.
  */
-function autologaut_attach_js(&$element, $settings) {
+function autologout_attach_js(&$element, $settings) {
   $element['#attached']['drupalSettings']['autologout'] = $settings;
   $element['#attached']['library'][] = 'autologout/drupal.autologout';
 }
