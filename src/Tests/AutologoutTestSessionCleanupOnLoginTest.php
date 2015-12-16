@@ -25,6 +25,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
    */
   protected $curlHandles = array();
   protected $loggedInUsers = array();
+  protected $privilegedUser;
 
   /**
    * SetUp() performs any pre-requisite tasks that need to happen.
@@ -47,7 +48,6 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
 
     // Login in session 1.
     $this->drupalLogin($this->privilegedUser);
-
     // Check one active session.
     $sessions = $this->getSessions($this->privilegedUser);
     $this->assertEqual(1, count($sessions), t('After initial login there is one active session'));
@@ -90,11 +90,10 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
     // Check there is one session in the sessions table.
     $result = db_select('sessions', 's')
       ->fields('s')
-      ->condition('uid', $account->uid)
+      ->condition('uid', $account->id())
       ->orderBy('timestamp', 'DESC')
       ->execute();
-
-    $sessions = array();
+    $sessions = [];
     foreach ($result as $session) {
       $sessions[] = $session;
     }
@@ -127,7 +126,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
 
     // Set a new unique cookie filename.
     do {
-      $this->cookieFile = $this->public_files_directory . '/' . $this->randomMachineName() . '.jar';
+      $this->cookieFile = $this->originalFileDirectory . '/' . $this->randomMachineName() . '.jar';
     } while (isset($this->curlHandles[$this->cookieFile]));
 
     return $session_id;
@@ -174,7 +173,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
     $this->curlHandles = array();
     $this->loggedInUsers = array();
     $this->loggedInUser = FALSE;
-    $this->cookieFile = $this->public_files_directory . '/' . $this->randomMachineName() . '.jar';
+    $this->cookieFile = $this->originalFileDirectory . '/' . $this->randomMachineName() . '.jar';
     unset($this->curlHandle);
   }
 
