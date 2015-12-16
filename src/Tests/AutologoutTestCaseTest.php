@@ -202,13 +202,13 @@ class AutologoutTestCaseTest extends WebTestBase {
     $_GET['q'] = 'admin';
 
     // Check if user will be kept logged in on admin paths with enforce dsabled.
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('enforce_admin', FALSE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), TRUE, t('Autologout does logout of admin pages without enforce on admin checked.'));
 
     // Check if user will not be kept logged in on admin paths if enforce enabled.
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('enforce_admin', TRUE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('Autologout does not logout of admin pages with enforce on admin not checked.'));
@@ -216,11 +216,11 @@ class AutologoutTestCaseTest extends WebTestBase {
     // Set a non admin page path.
     $_GET['q'] = 'node';
 
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('enforce_admin', FALSE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.'));
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('enforce_admin', TRUE)
       ->save();
     $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.'));
