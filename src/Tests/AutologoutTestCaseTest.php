@@ -49,7 +49,8 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutTimeoutPrecedence() {
     $uid = $this->privilegedUser->uid;
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
+
 
     // Default used if no role is specified.
     $config->set('timeout', 100)
@@ -148,16 +149,16 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutSettingsForm() {
     $edit = array();
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('max_timeout', 1000)
       ->save();
 
     // Test that it is possible to set a value above the max_timeout
     // threshold.
-    $edit['timeout'] = 1500;
-    $edit['max_timeout'] = 2000;
-    $edit['padding'] = 60;
-    $edit['role_logout'] = TRUE;
+    $edit['autologout_timeout'] = 1500;
+    $edit['autologout_max_timeout'] = 2000;
+    $edit['autologout_padding'] = 60;
+    $edit['autologout_role_logout'] = TRUE;
     $edit['autologout_redirect_url'] = TRUE;
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
@@ -231,7 +232,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testAutologoutDefaultTimeoutAccessDeniedToAdmin() {
     // Enforce auto logout of admin pages.
-    $config = \Drupal::config('autologout.settings');
+    $config = \Drupal::configFactory()->getEditable('autologout.settings');
     $config->set('enforce_admin', FALSE)
       ->save();
 
