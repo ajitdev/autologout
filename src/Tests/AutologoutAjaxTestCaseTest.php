@@ -21,7 +21,7 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('autologout', 'node', 'user');
+  public static $modules = array('node', 'system_test', 'views', 'user', 'autologout');
 
   /**
    * User with admin rights.
