@@ -19,7 +19,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('autologout', 'user', 'node');
+  public static $modules = array('node', 'system_test', 'views', 'user', 'autologout');
   /**
    * User with admin rights.
    */
