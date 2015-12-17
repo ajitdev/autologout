@@ -74,9 +74,8 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
     $this->assert(!empty($result[1]->settings->time) && is_int($result[1]->settings->time) && $result[1]->settings->time > 0, t('autologout_ajax_get_time_left returns the remaining time as a positive integer'));
 
     // Test that ajax logout works as expected.
-    $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in'));
     $this->drupalGet('autologout_ahah_logout');
-
+    $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in'));
 
     // Check we are now logged out.
     $this->drupalGet('node');
@@ -126,8 +125,8 @@ class AutologoutAjaxTestCaseTest extends WebTestBase {
     $this->assertText(t('Log out'), t('User is still logged in.'));
 
     // Logout.
-    $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in.'));
     $this->drupalGet('autologout_ahah_logout');
+    $this->assertResponse(200, t('autologout_ahah_logout is accessible when logged in.'));
 
     // Check further requests to set last result in 403.
     $result = $this->drupalGet('autologout_ahah_set_last');
