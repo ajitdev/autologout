@@ -19,7 +19,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('node', 'system_test', 'views', 'user', 'autologout');
+  public static $modules = array('node', 'system_test', 'views', 'user', 'autologout', 'menu_ui','block');
   /**
    * User with admin rights.
    */
@@ -43,6 +43,12 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->config->set('timeout', 10)
       ->save();
 
+    $this->drupalLogin($this->privilegedUser);
+
+    // Make node page default.
+    $this->config('system.site')->set('page.front', 'node')->save();
+    // Place the User login block on the home page to verify Log out text.
+    $this->drupalPlaceBlock('system_menu_block:account');
   }
 
   /**
@@ -159,7 +165,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['autologout_max_timeout'] = 2000;
     $edit['autologout_padding'] = 60;
     $edit['autologout_role_logout'] = TRUE;
-    $edit['autologout_redirect_url'] = TRUE;
+    $edit['autologout_redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved.'), t('Unable to save autologout config when modifying the max timeout.'));
@@ -188,7 +194,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['autologout_max_timeout'] = 2000;
     $edit['autologout_padding'] = 60;
     $edit['autologout_role_logout'] = TRUE;
-    $edit['autologout_redirect_url'] = TRUE;
+    $edit['autologout_redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved.'), t('Unable to save autologout due to out of range role timeout for a role which is not enabled..'));
