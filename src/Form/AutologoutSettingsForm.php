@@ -260,7 +260,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
 
     // Validate redirect url.
     if (strpos($autologout_redirect_url, '/') !== 0) {
-      $form_state->setErrorByName('redirect_url', $this->t("The user-entered string :autologout_redirect_url must begin with a '/'", array(':autologout_redirect_url' => $autologout_redirect_url)));
+      $form_state->setErrorByName('redirect_url', $this->t("The user-entered string @redirect_url must begin with a '/'", array('@redirect_url' => $autologout_redirect_url)));
     }
 
     parent::validateForm($form, $form_state);
