@@ -15,7 +15,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 function autologout_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.autologout':
-      $seconds = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
+      $seconds = \Drupal::service('autologout.manager')->getUserTimeout();
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t("This module allows you to force site users to be logged out after a given amount of time due to inactivity after first being presented with a confirmation dialog. Your current logout threshold is %seconds seconds.", array('%seconds' => $seconds)) . '</p>';
@@ -105,7 +105,7 @@ function autologout_autologout_prevent() {
   }
 
   // If user is anonymous or has no timeout set.
-  if ($user->id() == 0 || (!\Drupal::service('autologout.manager')->autologoutGetUserTimeout())) {
+  if ($user->id() == 0 || (!\Drupal::service('autologout.manager')->getUserTimeout())) {
     return TRUE;
   }
 
@@ -137,23 +137,23 @@ function autologout_page_attachments(array &$page) {
   $autologout_manager = \Drupal::service('autologout.manager');
   if (\Drupal::currentUser()->id() == 0) {
     if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
-      $autologout_manager->autologoutInactivityMessage();
+      $autologout_manager->inactivityMessage();
     }
     return;
   }
 
   // Check if JS should be included on this request.
-  if ($autologout_manager->autologoutPreventJs()) {
+  if ($autologout_manager->preventJs()) {
     return;
   }
 
   // Check if anything wants to be refresh only. This URL would include the
   // javascript but will keep the login alive whilst that page is opened.
-  $refresh_only = $autologout_manager->autologoutRefreshOnly();
+  $refresh_only = $autologout_manager->refreshOnly();
   $now = REQUEST_TIME;
   $settings = \Drupal::config('autologout.settings');
 
-  $timeout = $autologout_manager->autologoutGetUserTimeout();
+  $timeout = $autologout_manager->getUserTimeout();
   $timeout_padding = $settings->get('padding');
   $redirect_url = $settings->get('redirect_url');
   $redirect_query = \Drupal::service('redirect.destination')->getAsArray() + array('timeout' => 1);
@@ -179,7 +179,7 @@ function autologout_page_attachments(array &$page) {
   if (!$refresh_only && isset($_SESSION['autologout_last'])) {
     // If time since last access is > than the timeout + padding, log them out.
     if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
-      $autologout_manager->autologoutLogout();
+      $autologout_manager->logout();
 
       // User has changed so force Drupal to remake decisions based on user.
       global $theme, $theme_key;
@@ -188,7 +188,7 @@ function autologout_page_attachments(array &$page) {
       $theme_key = NULL;
 
       \Drupal::theme()->getActiveTheme();
-      $autologout_manager->autologoutInactivityMessage();
+      $autologout_manager->inactivityMessage();
     }
     else {
       $_SESSION['autologout_last'] = $now;
@@ -203,7 +203,7 @@ function autologout_page_attachments(array &$page) {
  * Implements hook_page_bottom().
  */
 function autologout_page_bottom() {
-  if (!\Drupal::service('autologout.manager')->autologoutPreventJs()) {
+  if (!\Drupal::service('autologout.manager')->preventJs()) {
     $page_bottom['autologout'] = [
       '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
     ];
@@ -232,7 +232,7 @@ function autologout_attach_js(&$element, $settings) {
  */
 function autologout_user_login($account) {
   // Cleanup old sessions.
-  $timeout = \Drupal::service('autologout.manager')->autologoutGetUserTimeout($account->id());
+  $timeout = \Drupal::service('autologout.manager')->getUserTimeout($account->id());
 
   if (empty($timeout)) {
     // Users that don't get logged have their sessions left.

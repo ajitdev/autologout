@@ -49,7 +49,7 @@ class AutologoutController extends ControllerBase {
    * AJAX callback that performs the actual logout and redirects the user.
    */
   public function ahahLogout() {
-    $this->autoLogoutManager->autologoutLogout();
+    $this->autoLogoutManager->logout();
     $url = Url::fromRoute('user.login');
     return new RedirectResponse($url->toString());
   }
@@ -62,7 +62,7 @@ class AutologoutController extends ControllerBase {
 
     // Reset the timer.
     $response = new AjaxResponse();
-    $markup = $this->autoLogoutManager->autologoutCreateTimer();
+    $markup = $this->autoLogoutManager->createTimer();
     $response->addCommand(new Ajax\ReplaceCommand('#timer', $markup));
 
     return $response;
@@ -72,11 +72,11 @@ class AutologoutController extends ControllerBase {
    * AJAX callback that returns the time remaining for this user is logged out.
    */
   public function ahahGetRemainingTime() {
-    $time_remaining_ms = $this->autoLogoutManager->autologoutGetRemainingTime() * 1000;
+    $time_remaining_ms = $this->autoLogoutManager->getRemainingTime() * 1000;
 
     // Reset the timer.
     $response = new AjaxResponse();
-    $markup = $this->autoLogoutManager->autologoutCreateTimer();
+    $markup = $this->autoLogoutManager->createTimer();
 
     $response->addCommand(new Ajax\ReplaceCommand('#timer', $markup));
     $response->addCommand(new Ajax\SettingsCommand(array('time' => $time_remaining_ms)));

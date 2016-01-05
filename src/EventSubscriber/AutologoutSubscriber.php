@@ -40,7 +40,7 @@ class AutologoutSubscriber implements EventSubscriberInterface {
    *   The request event.
    */
   public function checkForAutologoutjs(GetResponseEvent $event) {
-    if ($this->autoLogoutManager->autologoutPreventJs()) {
+    if ($this->autoLogoutManager->preventJs()) {
       return;
     }
   }

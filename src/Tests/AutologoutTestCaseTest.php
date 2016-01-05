@@ -161,40 +161,40 @@ class AutologoutTestCaseTest extends WebTestBase {
 
     // Test that it is possible to set a value above the max_timeout
     // threshold.
-    $edit['autologout_timeout'] = 1500;
-    $edit['autologout_max_timeout'] = 2000;
-    $edit['autologout_padding'] = 60;
-    $edit['autologout_role_logout'] = TRUE;
-    $edit['autologout_redirect_url'] = '/user/login';
+    $edit['timeout'] = 1500;
+    $edit['max_timeout'] = 2000;
+    $edit['padding'] = 60;
+    $edit['role_logout'] = TRUE;
+    $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved.'), t('Unable to save autologout config when modifying the max timeout.'));
 
     // Test that out of range values are picked up.
-    $edit['autologout_timeout'] = 2500;
-    $edit['autologout_max_timeout'] = 2000;
-    $edit['autologout_padding'] = 60;
-    $edit['autologout_redirect_url'] = TRUE;
+    $edit['timeout'] = 2500;
+    $edit['max_timeout'] = 2000;
+    $edit['padding'] = 60;
+    $edit['redirect_url'] = TRUE;
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertNoText(t('The configuration options have been saved.'), t('Saved configuration despite the autologout_timeout being too large.'));
 
     // Test that out of range values are picked up.
-    $edit['autologout_timeout'] = 1500;
-    $edit['autologout_max_timeout'] = 2000;
-    $edit['autologout_padding'] = 60;
-    $edit['autologout_redirect_url'] = TRUE;
+    $edit['timeout'] = 1500;
+    $edit['max_timeout'] = 2000;
+    $edit['padding'] = 60;
+    $edit['redirect_url'] = TRUE;
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertNoText(t('The configuration options have been saved.'), t('Saved configuration despite a role timeout being too large.'));
 
     // Test that role timeouts are not validated for
     // disabled roles.
-    $edit['autologout_timeout'] = 1500;
-    $edit['autologout_max_timeout'] = 2000;
-    $edit['autologout_padding'] = 60;
-    $edit['autologout_role_logout'] = TRUE;
-    $edit['autologout_redirect_url'] = '/user/login';
+    $edit['timeout'] = 1500;
+    $edit['max_timeout'] = 2000;
+    $edit['padding'] = 60;
+    $edit['role_logout'] = TRUE;
+    $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved.'), t('Unable to save autologout due to out of range role timeout for a role which is not enabled..'));
@@ -291,7 +291,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    *   The test grouping
    */
   public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
-    return $this->assertEqual(\Drupal::service('autologout.manager')->autologoutGetUserTimeout($uid), $expected_timeout, $message, $group);
+    return $this->assertEqual(\Drupal::service('autologout.manager')->getUserTimeout($uid), $expected_timeout, $message, $group);
   }
 
 }
