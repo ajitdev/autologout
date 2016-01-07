@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Defines autologout Subscriber.
  */
-class AutologoutSubscriber implements EventSubscriberInterface {
+clas implements EventSubscriberInterface {
 
   /**
    * The autologout manager service.
@@ -39,9 +39,50 @@ class AutologoutSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
    *   The request event.
    */
-  public function checkForAutologoutjs(GetResponseEvent $event) {
+  public function onRequest(GetResponseEvent $event) {
+    $autologout_manager = \Drupal::service('autologout.manager');
+
+    $uid = \Drupal::currentUser()->id();
+
+    if (\Drupal::currentUser()->id() == 0) {
+      if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
+        $autologout_manager->autologoutInactivityMessage();
+      }
+      return;
+    }
+
     if ($this->autoLogoutManager->autologoutPreventJs()) {
       return;
+    }
+
+    $now = REQUEST_TIME;
+    // Check if anything wants to be refresh only. This URL would include the
+    // javascript but will keep the login alive whilst that page is opened.
+    $refresh_only = $autologout_manager->autologoutRefreshOnly();
+    $settings = \Drupal::config('autologout.settings');
+    $timeout = $autologout_manager->autologoutGetUserTimeout();
+    $timeout_padding = $settings->get('padding');
+
+    // We need a backup plan if JS is disabled.
+    if (!$refresh_only && isset($_SESSION['autologout_last'])) {
+      // If time since last access is > than the timeout + padding, log them out.
+      $diff = $now - $_SESSION['autologout_last'];
+      if ($diff >= ($timeout + (int) $timeout_padding)) {
+        $autologout_manager->autologoutLogout();
+        // User has changed so force Drupal to remake decisions based on user.
+        global $theme, $theme_key;
+        drupal_static_reset();
+        $theme = NULL;
+        $theme_key = NULL;
+        \Drupal::theme()->getActiveTheme();
+        $autologout_manager->autologoutInactivityMessage();
+      }
+      else {
+        $_SESSION['autologout_last'] = $now;
+      }
+    }
+    else {
+      $_SESSION['autologout_last'] = $now;
     }
   }
 
@@ -49,7 +90,7 @@ class AutologoutSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    $events[KernelEvents::REQUEST][] = array('checkForAutologoutjs');
+    $events[KernelEvents::REQUEST][] = ['onRequest', 100];
     return $events;
   }
 
