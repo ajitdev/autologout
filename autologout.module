@@ -43,7 +43,7 @@ function autologout_form_user_form_alter(&$form, FormStateInterface $form_state)
     $form['user_' . $user_id] = array(
       '#type' => 'textfield',
       '#title' => t('Your current logout threshold'),
-      '#default_value' => \Drupal::config('autologout.settings')->get('user_' . $user_id),
+      '#default_value' => \Drupal::config('autologout.user.' . $user_id)->get('timeout'),
       '#size' => 8,
       '#description' => t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
       '#element_validate' => array('_autologout_user_uid_timeout_validate'),
@@ -78,10 +78,17 @@ function autologout_user_profile_submit(&$form, FormStateInterface $form_state) 
     $access = TRUE;
   }
 
+  $timeout = $form_state->getValue('user_' . $user_id);
+  $enabled =  ($timeout != '') ? TRUE : FALSE;
+
+
   // Access is reused here as a security measure. Not only will the element not
   // display but wont submit without access.
   if ($access) {
-    \Drupal::configFactory()->getEditable('autologout.settings')->set('user_' . $user_id, $form_state->getValue('user_' . $user_id))->save();
+    \Drupal::configFactory()->getEditable('autologout.user.' . $user_id)
+      ->set('enabled', $enabled)
+      ->set('timeout', $timeout)
+      ->save();
   }
 }
 
@@ -135,12 +142,6 @@ function autologout_autologout_refresh_only() {
  */
 function autologout_page_attachments(array &$page) {
   $autologout_manager = \Drupal::service('autologout.manager');
-  if (\Drupal::currentUser()->id() == 0) {
-    if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
-      $autologout_manager->autologoutInactivityMessage();
-    }
-    return;
-  }
 
   // Check if JS should be included on this request.
   if ($autologout_manager->autologoutPreventJs()) {
@@ -150,9 +151,7 @@ function autologout_page_attachments(array &$page) {
   // Check if anything wants to be refresh only. This URL would include the
   // javascript but will keep the login alive whilst that page is opened.
   $refresh_only = $autologout_manager->autologoutRefreshOnly();
-  $now = REQUEST_TIME;
   $settings = \Drupal::config('autologout.settings');
-
   $timeout = $autologout_manager->autologoutGetUserTimeout();
   $timeout_padding = $settings->get('padding');
   $redirect_url = $settings->get('redirect_url');
@@ -167,7 +166,9 @@ function autologout_page_attachments(array &$page) {
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
     'redirect_url' => Url::fromUserInput($redirect_url, array('query' => $redirect_query))->toString(),
-    'title' => t('@name Alert', array('@name' => \Drupal::config('system.site')->get('name'))),
+    'title' => t('@name Alert', array(
+      '@name' => \Drupal::config('system.site')->get('name')
+    )),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
@@ -175,28 +176,6 @@ function autologout_page_attachments(array &$page) {
 
   autologout_attach_js($page, $settings, TRUE);
 
-  // We need a backup plan if JS is disabled.
-  if (!$refresh_only && isset($_SESSION['autologout_last'])) {
-    // If time since last access is > than the timeout + padding, log them out.
-    if (($now - $_SESSION['autologout_last']) >= ($timeout + (int) $timeout_padding)) {
-      $autologout_manager->autologoutLogout();
-
-      // User has changed so force Drupal to remake decisions based on user.
-      global $theme, $theme_key;
-      drupal_static_reset();
-      $theme = NULL;
-      $theme_key = NULL;
-
-      \Drupal::theme()->getActiveTheme();
-      $autologout_manager->autologoutInactivityMessage();
-    }
-    else {
-      $_SESSION['autologout_last'] = $now;
-    }
-  }
-  else {
-    $_SESSION['autologout_last'] = $now;
-  }
 }
 
 /**
