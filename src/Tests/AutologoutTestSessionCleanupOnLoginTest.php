@@ -11,7 +11,7 @@ use Drupal\simpletest\WebTestBase;
  *
  * @description Ensure that the autologout module cleans up stale sessions at login
  *
- * @group autologout
+ * @group Autologout
  */
 class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   /**
