@@ -181,7 +181,7 @@ function autologout_page_attachments(array &$page) {
  * Implements hook_page_bottom().
  */
 function autologout_page_bottom() {
-  if (!\Drupal::service('autologout.manager')->autologoutPreventJs()) {
+  if (!\Drupal::service('autologout.manager')->preventJs()) {
     $page_bottom['autologout'] = [
       '#markup' => '<form id="autologout-cache-check"><input type="hidden" id="autologout-cache-check-bit" value="0" /></form>',
     ];
