@@ -52,7 +52,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutPreventJs() {
+  public function preventJs() {
     foreach ($this->moduleHandler->invokeAll('autologout_prevent') as $prevent) {
       if (!empty($prevent)) {
         return TRUE;
@@ -65,7 +65,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutRefreshOnly() {
+  public function refreshOnly() {
     foreach ($this->moduleHandler->invokeAll('autologout_refresh_only') as $module_refresh_only) {
       if (!empty($module_refresh_only)) {
         return TRUE;
@@ -78,7 +78,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutInactivityMessage() {
+  public function inactivityMessage() {
     $message = $this->autoLogoutSettings->get('inactivity_message');
     if (!empty($message)) {
       drupal_set_message($message);
@@ -88,7 +88,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutLogout() {
+  public function logout() {
     $user = \Drupal::currentUser();
 
     if ($this->autoLogoutSettings->get('use_watchdog')) {
@@ -104,7 +104,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutGetRoleTimeout() {
+  public function getRoleTimeout() {
     $roles = user_roles(TRUE);
     $role_timeout = array();
 
@@ -122,8 +122,8 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutGetRemainingTime() {
-    $timeout = $this->autologoutGetUserTimeout();
+  public function getRemainingTime() {
+    $timeout = $this->getUserTimeout();
     $time_passed = isset($_SESSION['autologout_last']) ? REQUEST_TIME - $_SESSION['autologout_last'] : 0;
     return $timeout - $time_passed;
   }
@@ -132,14 +132,14 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutCreateTimer() {
-    return $this->autologoutGetRemainingTime();
+  public function createTimer() {
+    return $this->getRemainingTime();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function autologoutGetUserTimeout($uid = NULL) {
+  public function getUserTimeout($uid = NULL) {
     if (is_null($uid)) {
       // If $uid is not provided, use the logged in user.
       $user = \Drupal::currentUser();
@@ -163,7 +163,7 @@ class AutologoutManager implements AutologoutManagerInterface {
     if ($this->autoLogoutSettings->get('role_logout')) {
       $user_roles = $user->getRoles();
       $output = array();
-      $timeouts = $this->autologoutGetRoleTimeout();
+      $timeouts = $this->getRoleTimeout();
       foreach ($user_roles as $rid => $role) {
         if (isset($timeouts[$role])) {
           $output[$rid] = $timeouts[$role];
@@ -184,7 +184,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function autologoutLogoutRole($user) {
+  public function logoutRole($user) {
     if ($this->autoLogoutSettings->get('role_logout')) {
       foreach ($user->roles as $name => $role) {
         if ($this->configFactory->get('autologout.role.' . $name . '.enabled')) {

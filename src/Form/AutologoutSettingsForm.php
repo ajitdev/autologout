@@ -217,7 +217,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
    * @return bool
    *    Return TRUE or FALSE
    */
-  public function autologoutTimeoutValidate($timeout, $max_timeout = NULL) {
+  public function timeoutValidate($timeout, $max_timeout = NULL) {
     $validate = TRUE;
     if (is_null($max_timeout)) {
       $max_timeout = \Drupal::config('autologout.settings')->get('max_timeout');
@@ -251,6 +251,8 @@ class AutologoutSettingsForm extends ConfigFormBase {
         continue;
       }
 
+      $timeout = $new_stack['role_' . $key . '_timeout'];
+      $validate = $this->timeoutValidate($timeout, $max_timeout);
       $timeout = $new_stack[$key . '_timeout'];
       $validate = $this->autologoutTimeoutValidate($timeout, $max_timeout);
       if (!$validate) {
@@ -260,10 +262,10 @@ class AutologoutSettingsForm extends ConfigFormBase {
 
     $timeout = $values['timeout'];
 
-//    // Validate timeout.
-//    if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
-//      $form_state->setErrorByName('timeout', $this->t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
-//    }
+    // Validate timeout.
+    if (!is_numeric($timeout) || ((int) $timeout != $timeout) || $timeout < 60 || $timeout > $max_timeout) {
+      $form_state->setErrorByName('timeout', $this->t('The timeout must be an integer greater than 60 and less then %max.', array('%max' => $max_timeout)));
+    }
 
     $redirect_url = $values['redirect_url'];
 

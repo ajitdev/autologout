@@ -15,7 +15,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 function autologout_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.autologout':
-      $seconds = \Drupal::service('autologout.manager')->autologoutGetUserTimeout();
+      $seconds = \Drupal::service('autologout.manager')->getUserTimeout();
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t("This module allows you to force site users to be logged out after a given amount of time due to inactivity after first being presented with a confirmation dialog. Your current logout threshold is %seconds seconds.", array('%seconds' => $seconds)) . '</p>';
@@ -112,7 +112,7 @@ function autologout_autologout_prevent() {
   }
 
   // If user is anonymous or has no timeout set.
-  if ($user->id() == 0 || (!\Drupal::service('autologout.manager')->autologoutGetUserTimeout())) {
+  if ($user->id() == 0 || (!\Drupal::service('autologout.manager')->getUserTimeout())) {
     return TRUE;
   }
 
@@ -144,15 +144,16 @@ function autologout_page_attachments(array &$page) {
   $autologout_manager = \Drupal::service('autologout.manager');
 
   // Check if JS should be included on this request.
-  if ($autologout_manager->autologoutPreventJs()) {
+  if ($autologout_manager->preventJs()) {
     return;
   }
 
   // Check if anything wants to be refresh only. This URL would include the
   // javascript but will keep the login alive whilst that page is opened.
-  $refresh_only = $autologout_manager->autologoutRefreshOnly();
+  $refresh_only = $autologout_manager->refreshOnly();
   $settings = \Drupal::config('autologout.settings');
-  $timeout = $autologout_manager->autologoutGetUserTimeout();
+
+  $timeout = $autologout_manager->getUserTimeout();
   $timeout_padding = $settings->get('padding');
   $redirect_url = $settings->get('redirect_url');
   $redirect_query = \Drupal::service('redirect.destination')->getAsArray() + array('timeout' => 1);
@@ -166,9 +167,7 @@ function autologout_page_attachments(array &$page) {
     'timeout_padding' => $timeout_padding * 1000,
     'message' => t('@msg', array('@msg' => $msg)),
     'redirect_url' => Url::fromUserInput($redirect_url, array('query' => $redirect_query))->toString(),
-    'title' => t('@name Alert', array(
-      '@name' => \Drupal::config('system.site')->get('name')
-    )),
+    'title' => t('@name Alert', array('@name' => \Drupal::config('system.site')->get('name'))),
     'refresh_only' => $refresh_only,
     'no_dialog' => $no_dialog,
     'use_alt_logout_method' => $use_alt_logout_method,
@@ -211,7 +210,7 @@ function autologout_attach_js(&$element, $settings) {
  */
 function autologout_user_login($account) {
   // Cleanup old sessions.
-  $timeout = \Drupal::service('autologout.manager')->autologoutGetUserTimeout($account->id());
+  $timeout = \Drupal::service('autologout.manager')->getUserTimeout($account->id());
 
   if (empty($timeout)) {
     // Users that don't get logged have their sessions left.

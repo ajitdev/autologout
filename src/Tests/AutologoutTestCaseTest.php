@@ -318,7 +318,7 @@ class AutologoutTestCaseTest extends WebTestBase {
    *   The test grouping
    */
   public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
-    return $this->assertEqual(\Drupal::service('autologout.manager')->autologoutGetUserTimeout($uid), $expected_timeout, $message, $group);
+    return $this->assertEqual(\Drupal::service('autologout.manager')->getUserTimeout($uid), $expected_timeout, $message, $group);
   }
 
 }

@@ -54,7 +54,7 @@ class AutologoutBlockForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['autologout_reset'] = array(
+    $form['reset'] = array(
       '#type' => 'button',
       '#value' => t('Reset Timeout'),
       '#weight' => 1,
@@ -66,7 +66,7 @@ class AutologoutBlockForm extends FormBase {
     );
 
     $form['timer'] = array(
-      '#markup' => $this->autoLogoutManager->autologoutCreateTimer(),
+      '#markup' => $this->autoLogoutManager->createTimer(),
     );
 
     return parent::buildForm($form, $form_state);

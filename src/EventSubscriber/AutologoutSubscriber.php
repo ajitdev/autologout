@@ -14,7 +14,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * Defines autologout Subscriber.
  */
-clas implements EventSubscriberInterface {
+class AutologoutSubscriber implements EventSubscriberInterface {
 
   /**
    * The autologout manager service.
@@ -46,12 +46,12 @@ clas implements EventSubscriberInterface {
 
     if (\Drupal::currentUser()->id() == 0) {
       if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
-        $autologout_manager->autologoutInactivityMessage();
+        $autologout_manager->inactivityMessage();
       }
       return;
     }
 
-    if ($this->autoLogoutManager->autologoutPreventJs()) {
+    if ($this->autoLogoutManager->preventJs()) {
       return;
     }
 
