@@ -31,6 +31,13 @@ class AutologoutManager implements AutologoutManagerInterface {
   protected $autoLogoutSettings;
 
   /**
+   * The config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Constructs an AutologoutManager object.
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
@@ -39,6 +46,7 @@ class AutologoutManager implements AutologoutManagerInterface {
   public function __construct(ModuleHandlerInterface $module_handler, ConfigFactoryInterface $config_factory) {
     $this->moduleHandler = $module_handler;
     $this->autoLogoutSettings = $config_factory->get('autologout.settings');
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -101,10 +109,11 @@ class AutologoutManager implements AutologoutManagerInterface {
     $role_timeout = array();
 
     // Go through roles, get timeouts for each and return as array.
-    foreach ($roles as $rid => $role) {
-      if ($this->autoLogoutSettings->get('role_' . $rid)) {
-        $timeout_role = $this->autoLogoutSettings->get('role_' . $rid . '_timeout');
-        $role_timeout[$rid] = $timeout_role;
+    foreach ($roles as $name => $role) {
+      $role_settings = $this->configFactory->get('autologout.role.' . $name);
+      if ($role_settings->get('enabled')) {
+        $timeout_role = $role_settings->get('timeout');
+        $role_timeout[$name] = $timeout_role;
       }
     }
     return $role_timeout;
@@ -143,8 +152,9 @@ class AutologoutManager implements AutologoutManagerInterface {
       // Anonymous doesn't get logged out.
       return 0;
     }
+    $user_settings = $this->configFactory->get('autologout.user.' . $user->id());
 
-    if (is_numeric($user_timeout = $this->autoLogoutSettings->get('user_' . $user->id()))) {
+    if (is_numeric($user_timeout =$user_settings->get('timeout'))) {
       // User timeout takes precedence.
       return $user_timeout;
     }
@@ -176,8 +186,8 @@ class AutologoutManager implements AutologoutManagerInterface {
    */
   public function autologoutLogoutRole($user) {
     if ($this->autoLogoutSettings->get('role_logout')) {
-      foreach ($user->roles as $key => $role) {
-        if ($this->autoLogoutSettings->get('role_' . $key)) {
+      foreach ($user->roles as $name => $role) {
+        if ($this->configFactory->get('autologout.role.' . $name . '.enabled')) {
           return TRUE;
         }
       }
