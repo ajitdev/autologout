@@ -220,7 +220,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
   public function timeoutValidate($timeout, $max_timeout = NULL) {
     $validate = TRUE;
     if (is_null($max_timeout)) {
-      $max_timeout = \Drupal::config('autologout.settings')->get('max_timeout');
+      $max_timeout = $this->config('autologout.settings')->get('max_timeout');
     }
 
     if (!is_numeric($timeout) || $timeout < 0 || ($timeout > 0 && $timeout < 60) || $timeout > $max_timeout) {
@@ -239,7 +239,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     foreach ($values['table'] as $key => $pair) {
       if (is_array($pair)) {
         foreach ($pair as $pairkey => $pairvalue) {
-          $new_stack[$pairkey] = $pairvalue;
+          $new_stack[$key][$pairkey] = $pairvalue;
         }
       }
     }
@@ -251,12 +251,10 @@ class AutologoutSettingsForm extends ConfigFormBase {
         continue;
       }
 
-      $timeout = $new_stack['role_' . $key . '_timeout'];
+      $timeout = $new_stack[$key]['timeout'];
       $validate = $this->timeoutValidate($timeout, $max_timeout);
-      $timeout = $new_stack[$key . '_timeout'];
-      $validate = $this->autologoutTimeoutValidate($timeout, $max_timeout);
       if (!$validate) {
-        $form_state->setErrorByName($key . '_timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
+        $form_state->setErrorByName('table][' . $key . '][timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
       }
     }
 
