@@ -151,6 +151,7 @@ function autologout_page_attachments(array &$page) {
   // Check if anything wants to be refresh only. This URL would include the
   // javascript but will keep the login alive whilst that page is opened.
   $refresh_only = $autologout_manager->refreshOnly();
+
   $settings = \Drupal::config('autologout.settings');
 
   $timeout = $autologout_manager->getUserTimeout();

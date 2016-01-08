@@ -58,9 +58,9 @@ class AutologoutSubscriber implements EventSubscriberInterface {
     $now = REQUEST_TIME;
     // Check if anything wants to be refresh only. This URL would include the
     // javascript but will keep the login alive whilst that page is opened.
-    $refresh_only = $autologout_manager->autologoutRefreshOnly();
+    $refresh_only = $autologout_manager->refreshOnly();
     $settings = \Drupal::config('autologout.settings');
-    $timeout = $autologout_manager->autologoutGetUserTimeout();
+    $timeout = $autologout_manager->getUserTimeout();
     $timeout_padding = $settings->get('padding');
 
     // We need a backup plan if JS is disabled.
@@ -68,14 +68,14 @@ class AutologoutSubscriber implements EventSubscriberInterface {
       // If time since last access is > than the timeout + padding, log them out.
       $diff = $now - $_SESSION['autologout_last'];
       if ($diff >= ($timeout + (int) $timeout_padding)) {
-        $autologout_manager->autologoutLogout();
+        $autologout_manager->logout();
         // User has changed so force Drupal to remake decisions based on user.
         global $theme, $theme_key;
         drupal_static_reset();
         $theme = NULL;
         $theme_key = NULL;
         \Drupal::theme()->getActiveTheme();
-        $autologout_manager->autologoutInactivityMessage();
+        $autologout_manager->inactivityMessage();
       }
       else {
         $_SESSION['autologout_last'] = $now;
