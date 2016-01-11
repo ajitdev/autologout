@@ -313,8 +313,6 @@ class AutologoutTestCaseTest extends WebTestBase {
   public function testNoAutologoutWithRememberMe() {
     // Set the remember_me module data bit to TRUE.
     $this->userData->set('remember_me', $this->privilegedUser->id(), 'remember_me', TRUE);
-//    $this->privilegedUser->data['remember_me'] = TRUE;
-//    $this->privilegedUser->save();
 
     // Check that the user can access the page after login.
     $this->drupalGet('node');

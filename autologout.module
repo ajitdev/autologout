@@ -118,8 +118,8 @@ function autologout_autologout_prevent() {
   }
 
   // If the user has checked remember_me via the remember_me module.
-  $user_data = \Drupal::service('user.data')->get('remember_me', $user->id(), 'remember_me');
-  if (!empty($user_data)) {
+  $remember_me = \Drupal::service('user.data')->get('remember_me', $user->id(), 'remember_me');
+  if (!empty($remember_me)) {
     return TRUE;
   }
 }
