@@ -296,7 +296,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
       ->save();
 
     foreach ($values['table'] as $user) {
-     $this->configFactory()->getEditable('autologout.role.' . $user['role'])
+      $this->configFactory()->getEditable('autologout.role.' . $user['role'])
         ->set('enabled', $user['enabled'])
         ->set('timeout', $user['timeout'])
         ->save();

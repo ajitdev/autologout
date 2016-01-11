@@ -154,7 +154,7 @@ class AutologoutManager implements AutologoutManagerInterface {
     }
     $user_settings = $this->configFactory->get('autologout.user.' . $user->id());
 
-    if (is_numeric($user_timeout =$user_settings->get('timeout'))) {
+    if (is_numeric($user_timeout = $user_settings->get('timeout'))) {
       // User timeout takes precedence.
       return $user_timeout;
     }

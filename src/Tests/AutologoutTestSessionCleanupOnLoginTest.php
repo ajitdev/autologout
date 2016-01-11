@@ -2,7 +2,9 @@
 
 /**
  * @file
+ * Simpletest tests for autologout session cleanup on login.
  */
+
 namespace Drupal\autologout\Tests;
 use Drupal\simpletest\WebTestBase;
 
@@ -26,6 +28,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   protected $curlHandles = array();
   protected $loggedInUsers = array();
   protected $privilegedUser;
+  protected $database;
 
   /**
    * SetUp() performs any pre-requisite tasks that need to happen.
@@ -33,7 +36,17 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   public function setUp() {
     parent::setUp();
     // Create and log in our privileged user.
-    $this->privilegedUser = $this->drupalCreateUser(array('access content overview', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
+    $this->privilegedUser = $this->drupalCreateUser(['access content overview',
+      'administer site configuration',
+      'access site reports',
+      'access administration pages',
+      'bypass node access',
+      'administer content types',
+      'administer nodes',
+      'administer autologout',
+      'change own logout threshold',
+    ]);
+    $this->database = $this->container->get('database');
   }
 
   /**
@@ -88,7 +101,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
    */
   public function getSessions($account) {
     // Check there is one session in the sessions table.
-    $result = db_select('sessions', 's')
+    $result = $this->database->select('sessions', 's')
       ->fields('s')
       ->condition('uid', $account->id())
       ->orderBy('timestamp', 'DESC')
@@ -111,7 +124,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
   public function stashSession() {
     if (empty($this->cookieFile)) {
       // No session to stash.
-      return;
+      return 0;
     }
 
     // The session_id is the current cookieFile.
@@ -168,7 +181,7 @@ class AutologoutTestSessionCleanupOnLoginTest extends WebTestBase {
     }
 
     // Make the server forget all sessions.
-    db_truncate('sessions')->execute();
+    $this->database->truncate('sessions')->execute();
 
     $this->curlHandles = array();
     $this->loggedInUsers = array();

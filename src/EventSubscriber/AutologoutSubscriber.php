@@ -65,7 +65,7 @@ class AutologoutSubscriber implements EventSubscriberInterface {
 
     // We need a backup plan if JS is disabled.
     if (!$refresh_only && isset($_SESSION['autologout_last'])) {
-      // If time since last access is > than the timeout + padding, log them out.
+      // If time since last access is > timeout + padding, log them out.
       $diff = $now - $_SESSION['autologout_last'];
       if ($diff >= ($timeout + (int) $timeout_padding)) {
         $autologout_manager->logout();
