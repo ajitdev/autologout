@@ -42,6 +42,13 @@ class AutologoutTestCaseTest extends WebTestBase {
   protected $configFactory;
 
   /**
+   * Stores the user data service used by the test.
+   *
+   * @var \Drupal\user\UserDataInterface
+   */
+  public $userData;
+
+  /**
    * SetUp() performs any pre-requisite tasks that need to happen.
    */
   public function setUp() {
@@ -61,6 +68,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->drupalLogin($this->privilegedUser);
 
     $this->configFactory = $this->container->get('config.factory');
+    $this->userData = $this->container->get('user.data');
 
     $config = $this->configFactory->getEditable('autologout.settings');
     // For the purposes of the test, set the timeout periods to 10 seconds.
@@ -293,7 +301,6 @@ class AutologoutTestCaseTest extends WebTestBase {
 
     // Check we are now logged out.
     $this->drupalGet('admin/reports/status');
-    $this->drupalGet('admin/reports/status');
     $this->assertResponse(403, 'Admin page returns 403 access denied.');
     $this->assertNoText(t('Log out'), 'User is no longer logged in.');
     $this->assertNoText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), 'User cannot access elements of the admin page.');
@@ -307,8 +314,9 @@ class AutologoutTestCaseTest extends WebTestBase {
    */
   public function testNoAutologoutWithRememberMe() {
     // Set the remember_me module data bit to TRUE.
-    $this->privilegedUser->data['remember_me'] = TRUE;
-    $this->privilegedUser->save();
+    $this->userData->set('remember_me', $this->privilegedUser->id(), 'remember_me', TRUE);
+//    $this->privilegedUser->data['remember_me'] = TRUE;
+//    $this->privilegedUser->save();
 
     // Check that the user can access the page after login.
     $this->drupalGet('node');
