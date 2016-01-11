@@ -2,7 +2,9 @@
 
 /**
  * @file
+ * Simpletest tests for autologout.
  */
+
 namespace Drupal\autologout\Tests;
 use Drupal\simpletest\WebTestBase;
 
@@ -19,7 +21,14 @@ class AutologoutTestCaseTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('node', 'system_test', 'views', 'user', 'autologout', 'menu_ui','block');
+  public static $modules = ['node',
+    'system_test',
+    'views',
+    'user',
+    'autologout',
+    'menu_ui',
+    'block',
+  ];
   /**
    * User with admin rights.
    */
@@ -38,7 +47,17 @@ class AutologoutTestCaseTest extends WebTestBase {
   public function setUp() {
     parent::setUp();
     // Create and log in our privileged user.
-    $this->privilegedUser = $this->drupalCreateUser(array('access content', 'administer site configuration', 'access site reports', 'access administration pages', 'bypass node access', 'administer content types', 'administer nodes', 'administer autologout', 'change own logout threshold'));
+    $this->privilegedUser = $this->drupalCreateUser([
+      'access content',
+      'administer site configuration',
+      'access site reports',
+      'access administration pages',
+      'bypass node access',
+      'administer content types',
+      'administer nodes',
+      'administer autologout',
+      'change own logout threshold',
+    ]);
     $this->drupalLogin($this->privilegedUser);
 
     $this->configFactory = $this->container->get('config.factory');
@@ -67,7 +86,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_role_settings = $this->configFactory->getEditable('autologout.role.authenticated');
     $uid = $this->privilegedUser->id();
     $autologout_user_settings = $this->configFactory->getEditable('autologout.user.' . $uid);
-  //  var_dump($uid);
+
     // Default used if no role is specified.
     $autologout_settings->set('timeout', 100)
       ->set('role_logout', FALSE)
@@ -75,7 +94,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_role_settings->set('enabled', FALSE)
       ->set('timeout', 200)
       ->save();
-    $this->assertAutotimeout($uid, 100, t('User timeout uses default if no other option set'));
+    $this->assertAutotimeout($uid, 100, 'User timeout uses default if no other option set');
 
     // Default used if role selected but no user's role is selected.
     $autologout_settings->set('role_logout', TRUE)
@@ -83,7 +102,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_role_settings->set('enabled', FALSE)
       ->set('timeout', 200)
       ->save();
-    $this->assertAutotimeout($uid, 100, t('User timeout uses default if  role timeouts are used but not one of the current user.'));
+    $this->assertAutotimeout($uid, 100, 'User timeout uses default if  role timeouts are used but not one of the current user.');
 
     // Role timeout is used if user's role is selected.
     $autologout_settings->set('role_logout', TRUE)
@@ -91,7 +110,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_role_settings->set('enabled', TRUE)
       ->set('timeout', 200)
       ->save();
-    $this->assertAutotimeout($uid, 200, t('User timeout uses role value'));
+    $this->assertAutotimeout($uid, 200, 'User timeout uses role value');
 
     // Role timeout is used if user's role is selected.
     $autologout_settings->set('role_logout', TRUE)
@@ -99,7 +118,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_role_settings->set('enabled', TRUE)
       ->set('timeout', 0)
       ->save();
-    $this->assertAutotimeout($uid, 0, t('User timeout uses role value of 0 if set for one of the user roles.'));
+    $this->assertAutotimeout($uid, 0, 'User timeout uses role value of 0 if set for one of the user roles.');
 
     // Role timeout used if personal timeout is empty string.
     $autologout_settings->set('role_logout', TRUE)
@@ -110,7 +129,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_user_settings->set('enabled', FALSE)
       ->set('timeout', '')
       ->save();
-    $this->assertAutotimeout($uid, 200, t('User timeout uses role value if personal value is the empty string.'));
+    $this->assertAutotimeout($uid, 200, 'User timeout uses role value if personal value is the empty string.');
 
     // Default timeout used if personal timeout is empty string.
     $autologout_settings->set('role_logout', TRUE)
@@ -121,7 +140,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_user_settings->set('enabled', FALSE)
       ->set('timeout', '')
       ->save();
-    $this->assertAutotimeout($uid, 100, t('User timeout uses default value if personal value is the empty string and no role timeout is specified.'));
+    $this->assertAutotimeout($uid, 100, 'User timeout uses default value if personal value is the empty string and no role timeout is specified.');
 
     // Personal timeout used if set.
     $autologout_settings->set('role_logout', TRUE)
@@ -132,7 +151,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_user_settings->set('enabled', TRUE)
       ->set('timeout', 300)
       ->save();
-    $this->assertAutotimeout($uid, 300, t('User timeout uses default value if personal value is the empty string and no role timeout is specified.'));
+    $this->assertAutotimeout($uid, 300, 'User timeout uses default value if personal value is the empty string and no role timeout is specified.');
   }
 
   /**
@@ -141,7 +160,7 @@ class AutologoutTestCaseTest extends WebTestBase {
   public function testAutologoutDefaultTimeout() {
     // Check that the user can access the page after login.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertResponse(200, 'Homepage is accessible');
     $this->assertText('Log out', 'User is still logged in.');
 
     // Wait for timeout period to elapse.
@@ -149,9 +168,9 @@ class AutologoutTestCaseTest extends WebTestBase {
 
     // Check we are now logged out.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertResponse(200, 'Homepage is accessible');
     $this->assertNoRaw(t('Log out'), 'User is no longer logged in.');
-    $this->assertRaw(t('You have been logged out due to inactivity.'),'User sees inactivity message.');
+    $this->assertRaw(t('You have been logged out due to inactivity.'), 'User sees inactivity message.');
   }
 
   /**
@@ -160,17 +179,17 @@ class AutologoutTestCaseTest extends WebTestBase {
   public function testAutologoutNoLogoutInsideTimeout() {
     // Check that the user can access the page after login.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
-    $this->assertText(t('Log out'), t('User is still logged in.'));
+    $this->assertResponse(200, 'Homepage is accessible');
+    $this->assertText(t('Log out'), 'User is still logged in.');
 
     // Wait within the timeout period.
     sleep(10);
 
     // Check we are still logged in.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
-    $this->assertText(t('Log out'), t('User is still logged in.'));
-    $this->assertNoText(t('You have been logged out due to inactivity.'), t('User does not see inactivity message.'));
+    $this->assertResponse(200, 'Homepage is accessible');
+    $this->assertText(t('Log out'), 'User is still logged in.');
+    $this->assertNoText(t('You have been logged out due to inactivity.'), 'User does not see inactivity message.');
   }
 
   /**
@@ -191,7 +210,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertRaw(t('The configuration options have been saved.'), t('Unable to save autologout config when modifying the max timeout.'));
+    $this->assertRaw(t('The configuration options have been saved.'), 'Unable to save autologout config when modifying the max timeout.');
 
     // Test that out of range values are picked up.
     $edit['timeout'] = 2500;
@@ -200,7 +219,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['redirect_url'] = TRUE;
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertNoRaw(t('The configuration options have been saved.'), t('Saved configuration despite the timeout being too large.'));
+    $this->assertNoRaw(t('The configuration options have been saved.'), 'Saved configuration despite the timeout being too large.');
 
     // Test that out of range values are picked up.
     $edit['timeout'] = 1500;
@@ -209,7 +228,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['redirect_url'] = TRUE;
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertNoRaw(t('The configuration options have been saved.'), t('Saved configuration despite a role timeout being too large.'));
+    $this->assertNoRaw(t('The configuration options have been saved.'), 'Saved configuration despite a role timeout being too large.');
 
     // Test that role timeouts are not validated for
     // disabled roles.
@@ -220,7 +239,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertRaw(t('The configuration options have been saved.'), t('Unable to save autologout due to out of range role timeout for a role which is not enabled..'));
+    $this->assertRaw(t('The configuration options have been saved.'), 'Unable to save autologout due to out of range role timeout for a role which is not enabled..');
   }
 
   /**
@@ -236,23 +255,22 @@ class AutologoutTestCaseTest extends WebTestBase {
     // Check if user will be kept logged in on admin paths with enforce dsabled.
     $autologout_settings->set('enforce_admin', FALSE)
       ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), TRUE, t('Autologout does logout of admin pages without enforce on admin checked.'));
-
+    $this->assertEqual(autologout_autologout_refresh_only(), TRUE, 'Autologout does logout of admin pages without enforce on admin checked.');
 
     // Check if user will not be kept logged in on admin paths if enforce enabled.
     $autologout_settings->set('enforce_admin', TRUE)
       ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('Autologout does not logout of admin pages with enforce on admin not checked.'));
+    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, 'Autologout does not logout of admin pages with enforce on admin not checked.');
 
     // Set a non admin page path.
     $_GET['q'] = 'node';
 
     $autologout_settings->set('enforce_admin', FALSE)
       ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.'));
+    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, 'autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.');
     $autologout_settings->set('enforce_admin', TRUE)
       ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, t('autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.'));
+    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, 'autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.');
   }
 
   /**
@@ -266,10 +284,9 @@ class AutologoutTestCaseTest extends WebTestBase {
 
     // Check that the user can access the page after login.
     $this->drupalGet('admin/reports/status');
-    $this->assertResponse(200, t('Admin page is accessible'));
+    $this->assertResponse(200, 'Admin page is accessible');
     $this->assertText(t('Log out'), 'User is still logged in.');
-    $this->assertText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), t('User can access elements of the admin page.'));
-
+    $this->assertText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), 'User can access elements of the admin page.');
 
     // Wait for timeout period to elapse.
     sleep(20);
@@ -277,9 +294,9 @@ class AutologoutTestCaseTest extends WebTestBase {
     // Check we are now logged out.
     $this->drupalGet('admin/reports/status');
     $this->drupalGet('admin/reports/status');
-    $this->assertResponse(403, t('Admin page returns 403 access denied.'));
-    $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
-    $this->assertNoText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), t('User cannot access elements of the admin page.'));
+    $this->assertResponse(403, 'Admin page returns 403 access denied.');
+    $this->assertNoText(t('Log out'), 'User is no longer logged in.');
+    $this->assertNoText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), 'User cannot access elements of the admin page.');
     $this->assertText(t('You have been logged out due to inactivity.'), 'User sees inactivity message.');
   }
 
@@ -295,16 +312,16 @@ class AutologoutTestCaseTest extends WebTestBase {
 
     // Check that the user can access the page after login.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
-    $this->assertText(t('Log out'), t('User is still logged in.'));
+    $this->assertResponse(200, 'Homepage is accessible');
+    $this->assertText(t('Log out'), 'User is still logged in.');
 
     // Wait for timeout period to elapse.
     sleep(20);
 
     // Check we are still logged in.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
-    $this->assertText(t('Log out'), t('User is still logged in after timeout with remember_me on.'));
+    $this->assertResponse(200, 'Homepage is accessible');
+    $this->assertText(t('Log out'), 'User is still logged in after timeout with remember_me on.');
   }
 
   /**
@@ -315,9 +332,9 @@ class AutologoutTestCaseTest extends WebTestBase {
    * @param int $expected_timeout
    *   The expected timeout.
    * @param string $message
-   *   The test message
+   *   The test message.
    * @param string $group
-   *   The test grouping
+   *   The test grouping.
    */
   public function assertAutotimeout($uid, $expected_timeout, $message = '', $group = '') {
     return $this->assertEqual(\Drupal::service('autologout.manager')->getUserTimeout($uid), $expected_timeout, $message, $group);
