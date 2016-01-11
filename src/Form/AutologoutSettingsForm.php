@@ -243,20 +243,25 @@ class AutologoutSettingsForm extends ConfigFormBase {
         }
       }
     }
-    $max_timeout = $values['max_timeout'];
-    // Validate timeouts for each role.
-    foreach (user_roles(TRUE) as $key => $role) {
-      if (empty($new_stack[$key])) {
-        // Don't validate role timeouts for non enabled roles.
-        continue;
-      }
 
-      $timeout = $new_stack[$key]['timeout'];
-      $validate = $this->timeoutValidate($timeout, $max_timeout);
-      if (!$validate) {
-        $form_state->setErrorByName('table][' . $key . '][timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
+    $max_timeout = $values['max_timeout'];
+
+    if($values['role_logout']) {
+      // Validate timeouts for each role.
+      foreach (user_roles(TRUE) as $key => $role) {
+        if (empty($new_stack[$key])) {
+          // Don't validate role timeouts for non enabled roles.
+          continue;
+        }
+
+        $timeout = $new_stack[$key]['timeout'];
+        $validate = $this->timeoutValidate($timeout, $max_timeout);
+        if (!$validate) {
+          $form_state->setErrorByName('table][' . $key . '][timeout', $this->t('%role role timeout must be an integer greater than 60, less then %max or 0 to disable autologout for that role.', array('%role' => $role, '%max' => $max_timeout)));
+        }
       }
     }
+
 
     $timeout = $values['timeout'];
 
