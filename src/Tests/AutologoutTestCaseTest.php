@@ -265,9 +265,11 @@ class AutologoutTestCaseTest extends WebTestBase {
       ->save();
 
     // Check that the user can access the page after login.
-   $this->drupalGet('admin/reports/status');
+    $this->drupalGet('admin/reports/status');
     $this->assertResponse(200, t('Admin page is accessible'));
     $this->assertText(t('Log out'), 'User is still logged in.');
+    $this->assertText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), t('User can access elements of the admin page.'));
+
 
     // Wait for timeout period to elapse.
     sleep(20);
@@ -278,7 +280,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->assertResponse(403, t('Admin page returns 403 access denied.'));
     $this->assertNoText(t('Log out'), t('User is no longer logged in.'));
     $this->assertNoText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), t('User cannot access elements of the admin page.'));
-    $this->assertText(t('You have been logged out due to inactivity.'), t('User sees inactivity message.'));
+    $this->assertText(t('You have been logged out due to inactivity.'), 'User sees inactivity message.');
   }
 
   /**
