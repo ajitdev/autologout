@@ -214,7 +214,6 @@ class AutologoutTestCaseTest extends WebTestBase {
     $edit['timeout'] = 1500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
-    $edit['role_logout'] = TRUE;
     $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
@@ -238,8 +237,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertNoRaw(t('The configuration options have been saved.'), 'Saved configuration despite a role timeout being too large.');
 
-    // Test that role timeouts are not validated for
-    // disabled roles.
+    // Test that role timeouts are not validated for disabled roles.
     $edit['timeout'] = 1500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
