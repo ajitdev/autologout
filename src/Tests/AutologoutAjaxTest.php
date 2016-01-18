@@ -16,7 +16,7 @@ use Drupal\simpletest\WebTestBase;
  *
  * @group Autologout
  */
-class AutologoutAjaxTestCaseTest extends WebTestBase {
+class AutologoutAjaxTest extends WebTestBase {
   /**
    * Modules to enable.
    *
