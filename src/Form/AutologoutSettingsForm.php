@@ -248,7 +248,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
 
     if($values['role_logout']) {
       // Validate timeouts for each role.
-      foreach (user_roles(TRUE) as $role => $role_object) {
+      foreach (array_keys(user_roles(TRUE)) as $role) {
         if (empty($new_stack[$role]) || $new_stack[$role]['enabled'] == 0 ) {
           // Don't validate role timeouts for non enabled roles.
           continue;
