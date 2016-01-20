@@ -15,13 +15,15 @@ use Drupal\simpletest\WebTestBase;
  *
  * @group Autologout
  */
-class AutologoutTestCaseTest extends WebTestBase {
+class AutologoutTest extends WebTestBase {
   /**
    * Modules to enable.
    *
    * @var array
    */
-  public static $modules = ['node',
+  public static $modules = [
+    'node',
+    'system',
     'system_test',
     'views',
     'user',
@@ -29,6 +31,12 @@ class AutologoutTestCaseTest extends WebTestBase {
     'menu_ui',
     'block',
   ];
+
+  /**
+   * Use the Standard profile to test help implementations of many core modules.
+   */
+  protected $profile = 'standard';
+
   /**
    * User with admin rights.
    */
@@ -64,6 +72,8 @@ class AutologoutTestCaseTest extends WebTestBase {
       'administer nodes',
       'administer autologout',
       'change own logout threshold',
+      'access site reports',
+      'view the administration theme',
     ]);
     $this->drupalLogin($this->privilegedUser);
 
@@ -178,7 +188,7 @@ class AutologoutTestCaseTest extends WebTestBase {
     $this->drupalGet('node');
     $this->assertResponse(200, 'Homepage is accessible');
     $this->assertNoRaw(t('Log out'), 'User is no longer logged in.');
-    $this->assertRaw(t('You have been logged out due to inactivity.'), 'User sees inactivity message.');
+    $this->assertText(t('You have been logged out due to inactivity.'), 'User sees inactivity message.');
   }
 
   /**
@@ -209,43 +219,75 @@ class AutologoutTestCaseTest extends WebTestBase {
     $autologout_settings->set('max_timeout', 1000)
       ->save();
 
+    $roles = user_roles(TRUE);
+    // Unset authenticated, as it will be used to add manual value later.
+    unset($roles['authenticated']);
+
     // Test that it is possible to set a value above the max_timeout
     // threshold.
     $edit['timeout'] = 1500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
+    $edit['role_logout'] = TRUE;
+    $edit['table[authenticated][enabled]'] = TRUE;
+    $edit['table[authenticated][timeout]'] = 1200;
+    foreach ($roles as $key => $role) {
+      $edit['table[' . $key . '][enabled]'] = TRUE;
+      $edit['table[' . $key . '][timeout]'] = 1200;
+    }
     $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertRaw(t('The configuration options have been saved.'), 'Unable to save autologout config when modifying the max timeout.');
+    $this->assertText(t('The configuration options have been saved.'), 'Unable to save autologout config when modifying the max timeout.');
 
     // Test that out of range values are picked up.
     $edit['timeout'] = 2500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
-    $edit['redirect_url'] = TRUE;
-
+    $edit['role_logout'] = TRUE;
+    $edit['table[authenticated][enabled]'] = TRUE;
+    $edit['table[authenticated][timeout]'] = 1200;
+    foreach ($roles as $key => $role) {
+      $edit['table[' . $key . '][enabled]'] = TRUE;
+      $edit['table[' . $key . '][timeout]'] = 1200;
+    }
+    $edit['redirect_url'] = '/user/login';
+ //   print_r($edit);
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertNoRaw(t('The configuration options have been saved.'), 'Saved configuration despite the timeout being too large.');
+    $this->assertNoText(t('The configuration options have been saved.'), 'Saved configuration despite the autologout_timeout being too large.');
 
     // Test that out of range values are picked up.
     $edit['timeout'] = 1500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
-    $edit['redirect_url'] = TRUE;
-
+    $edit['role_logout'] = TRUE;
+    $edit['table[authenticated][enabled]'] = TRUE;
+    $edit['table[authenticated][timeout]'] = 2500;
+    foreach ($roles as $key => $role) {
+      $edit['table[' . $key . '][enabled]'] = TRUE;
+      $edit['table[' . $key . '][timeout]'] = 1200;
+    }
+    $edit['redirect_url'] = '/user/login';
+ // print_r($edit);
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertNoRaw(t('The configuration options have been saved.'), 'Saved configuration despite a role timeout being too large.');
+    $this->assertNoText(t('The configuration options have been saved.'), 'Saved configuration despite a role timeout being too large.');
 
-    // Test that role timeouts are not validated for disabled roles.
+    // Test that role timeouts are not validated for
+    // disabled roles.
     $edit['timeout'] = 1500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
     $edit['role_logout'] = TRUE;
+    $edit['table[authenticated][enabled]'] = FALSE;
+    $edit['table[authenticated][timeout]'] = 4000;
+    foreach ($roles as $key => $role) {
+      $edit['table[' . $key . '][enabled]'] = FALSE;
+      $edit['table[' . $key . '][timeout]'] = 1200;
+    }
     $edit['redirect_url'] = '/user/login';
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
-    $this->assertRaw(t('The configuration options have been saved.'), 'Unable to save autologout due to out of range role timeout for a role which is not enabled..');
+    $this->assertText(t('The configuration options have been saved.'), 'Unable to save autologout due to out of range role timeout for a role which is not enabled..');
   }
 
   /**
@@ -289,9 +331,8 @@ class AutologoutTestCaseTest extends WebTestBase {
       ->save();
 
     // Check that the user can access the page after login.
-    $this->drupalGet('admin/reports/status');
+    $var = $this->drupalGet('admin/reports/status');
     $this->assertResponse(200, 'Admin page is accessible');
-    $this->assertText(t('Log out'), 'User is still logged in.');
     $this->assertText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), 'User can access elements of the admin page.');
 
     // Wait for timeout period to elapse.
