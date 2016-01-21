@@ -6,6 +6,7 @@
  */
 
 namespace Drupal\autologout\Tests;
+
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -252,7 +253,6 @@ class AutologoutTest extends WebTestBase {
       $edit['table[' . $key . '][timeout]'] = 1200;
     }
     $edit['redirect_url'] = '/user/login';
- //   print_r($edit);
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertNoText(t('The configuration options have been saved.'), 'Saved configuration despite the autologout_timeout being too large.');
 
@@ -268,12 +268,10 @@ class AutologoutTest extends WebTestBase {
       $edit['table[' . $key . '][timeout]'] = 1200;
     }
     $edit['redirect_url'] = '/user/login';
- // print_r($edit);
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertNoText(t('The configuration options have been saved.'), 'Saved configuration despite a role timeout being too large.');
 
-    // Test that role timeouts are not validated for
-    // disabled roles.
+    // Test that role timeouts are not validated for disabled roles.
     $edit['timeout'] = 1500;
     $edit['max_timeout'] = 2000;
     $edit['padding'] = 60;
@@ -288,37 +286,6 @@ class AutologoutTest extends WebTestBase {
 
     $this->drupalPostForm('admin/config/people/autologout', $edit, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved.'), 'Unable to save autologout due to out of range role timeout for a role which is not enabled..');
-  }
-
-  /**
-   * Test enforce logout on admin page settings.
-   */
-  public function testAutlogoutOfAdminPages() {
-
-    $autologout_settings = $this->configFactory->getEditable('autologout.settings');
-
-    // Set an admin page path.
-    $_GET['q'] = 'admin';
-
-    // Check if user will be kept logged in on admin paths with enforce dsabled.
-    $autologout_settings->set('enforce_admin', FALSE)
-      ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), TRUE, 'Autologout does logout of admin pages without enforce on admin checked.');
-
-    // Check if user will not be kept logged in on admin paths if enforce enabled.
-    $autologout_settings->set('enforce_admin', TRUE)
-      ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, 'Autologout does not logout of admin pages with enforce on admin not checked.');
-
-    // Set a non admin page path.
-    $_GET['q'] = 'node';
-
-    $autologout_settings->set('enforce_admin', FALSE)
-      ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, 'autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is disabled.');
-    $autologout_settings->set('enforce_admin', TRUE)
-      ->save();
-    $this->assertEqual(autologout_autologout_refresh_only(), FALSE, 'autologout_autologout_refresh_only() returns FALSE on non admin page when enforce is enabled.');
   }
 
   /**
