@@ -206,7 +206,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
   /**
    * Validate timeout range.
    *
-   * Checks to see if timeout threshold is outside max/min values. Only done here
+   * Checks to see if timeout threshold is outside max/min values. Done here
    * to centralize and stop repeated code. Hard coded min, configurable max.
    *
    * @param int $timeout
@@ -246,10 +246,10 @@ class AutologoutSettingsForm extends ConfigFormBase {
 
     $max_timeout = $values['max_timeout'];
 
-    if($values['role_logout']) {
+    if ($values['role_logout']) {
       // Validate timeouts for each role.
       foreach (array_keys(user_roles(TRUE)) as $role) {
-        if (empty($new_stack[$role]) || $new_stack[$role]['enabled'] == 0 ) {
+        if (empty($new_stack[$role]) || $new_stack[$role]['enabled'] == 0) {
           // Don't validate role timeouts for non enabled roles.
           continue;
         }

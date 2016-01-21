@@ -78,35 +78,29 @@ class AutologoutAjaxTest extends WebTestBase {
     $this->assertText(t('Log out'), 'User is still logged in.');
 
     // Test the time remaining callback works as expected.
-    $result = $this->drupalGet('autologout_ajax_get_time_left');
+    $result = $this->drupalGetAjax('autologout_ajax_get_time_left');
     $this->assertResponse(200, 'autologout_ajax_get_time_left is accessible when logged in');
-    $result = json_decode($result);
-    $this->assertEqual('insert', $result[0]->command, 'autologout_ajax_get_time_left returns an insert command for adding the jstimer onto the page');
-    $this->assertEqual('#timer', $result[0]->selector, 'autologout_ajax_get_time_left specifies the #timer selector.');
-    $this->assert(!empty($result[1]->settings->time) && is_int($result[1]->settings->time) && $result[1]->settings->time > 0, t('autologout_ajax_get_time_left returns the remaining time as a positive integer'));
+    $this->assertEqual('insert', $result[0]['command'], 'autologout_ajax_get_time_left returns an insert command for adding the jstimer onto the page');
+    $this->assertEqual('#timer', $result[0]['selector'], 'autologout_ajax_get_time_left specifies the #timer selector.');
+    $this->assert(!empty($result[1]['settings']['time']) && is_int($result[1]['settings']['time']) && $result[1]['settings']['time'] > 0, 'autologout_ajax_get_time_left returns the remaining time as a positive integer');
 
     // Test that ajax logout works as expected.
     $this->drupalGet('autologout_ahah_logout');
     $this->assertResponse(200, 'autologout_ahah_logout is accessible when logged in');
-    // Controller Response issue.
-    $this->drupalLogout();
 
     // Check we are now logged out.
     $this->drupalGet('node');
-    $this->assertResponse(200, t('Homepage is accessible'));
+    $this->assertResponse(200, 'Homepage is accessible');
     $this->assertNoText(t('Log out'), 'User is no longer logged in.');
 
-    // Login the privileged user.
-    $this->drupalLogin($this->privilegedUser);
     // Check further get time remaining requests return access denied.
-    $result = $this->drupalGet('autologout_ajax_get_time_left');
-    $result = json_decode($result);
-    $this->assertNotEqual($result[0]->command, 'alert', 'When logged out, autologout_ajax_get_time_left returns the normal Drupal ajax alert.');
+    $this->drupalGet('autologout_ajax_get_time_left');
+    $this->assertResponse(403, 'autologout_ajax_get_time_left is not accessible when logged out.');
 
     // Check further logout requests result in access denied.
     $this->drupalGet('autologout_ahah_logout');
-    $this->assertResponse(403, 'autologout_ahah logout is not accessible when logged out.');
-    // Controller Response issue.
+    $this->assertResponse(403, 'autologout_ahah_logout is not accessible when logged out.');
+
   }
 
   /**
@@ -127,11 +121,10 @@ class AutologoutAjaxTest extends WebTestBase {
     sleep(14);
 
     // Test that ajax stay logged in works.
-    $result = $this->drupalGet('autologout_ahah_set_last');
+    $result = $this->drupalGetAjax('autologout_ahah_set_last');
     $this->assertResponse(200, 'autologout_ahah_set_last is accessible when logged in.');
-    $result = json_decode($result);
-    $this->assertEqual('insert', $result[0]->command, 'autologout_ajax_set_last returns an insert command for adding the jstimer onto the page');
-    $this->assertEqual('#timer', $result[0]->selector, 'autologout_ajax_set_last specifies the #timer selector.');
+    $this->assertEqual('insert', $result[0]['command'], 'autologout_ajax_set_last returns an insert command for adding the jstimer onto the page');
+    $this->assertEqual('#timer', $result[0]['selector'], 'autologout_ajax_set_last specifies the #timer selector.');
 
     // Sleep for half the timeout again.
     sleep(14);
@@ -144,12 +137,10 @@ class AutologoutAjaxTest extends WebTestBase {
     // Logout.
     $this->drupalGet('autologout_ahah_logout');
     $this->assertResponse(200, 'autologout_ahah_logout is accessible when logged in.');
-    // Controller Response issue.
 
     // Check further requests to set last result in 403.
-    $result = $this->drupalGet('autologout_ahah_set_last');
-    $result = json_decode($result);
-    $this->assertNotEqual($result[0]->command, 'alert', 'When logged out, autologout_ajax_set_last returns the normal Drupal ajax alert.');
+    $result = $this->drupalGetAjax('autologout_ahah_set_last');
+    $this->assertResponse(403, 'autologout_ahah_set_last is not accessible when logged out.');
   }
 
 }

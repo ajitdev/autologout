@@ -63,7 +63,7 @@ class AutologoutSessionCleanupOnLoginTest extends WebTestBase {
     $this->drupalLogin($this->privilegedUser);
     // Check one active session.
     $sessions = $this->getSessions($this->privilegedUser);
-    $this->assertEqual(1, count($sessions), t('After initial login there is one active session'));
+    $this->assertEqual(1, count($sessions), 'After initial login there is one active session');
 
     // Switch sessions.
     $session1 = $this->stashSession();
@@ -73,7 +73,7 @@ class AutologoutSessionCleanupOnLoginTest extends WebTestBase {
 
     // Check two active sessions.
     $sessions = $this->getSessions($this->privilegedUser);
-    $this->assertEqual(2, count($sessions), t('After second login there is now two active session'));
+    $this->assertEqual(2, count($sessions), 'After second login there is now two active session');
 
     // Switch sessions.
     $session2 = $this->stashSession();
@@ -86,12 +86,12 @@ class AutologoutSessionCleanupOnLoginTest extends WebTestBase {
 
     // Check one active session.
     $sessions = $this->getSessions($this->privilegedUser);
-    $this->assertEqual(1, count($sessions), t('After third login, there is 1 active session, two stale sessions were cleaned up.'));
+    $this->assertEqual(1, count($sessions), 'After third login, there is 1 active session, two stale sessions were cleaned up.');
 
     // Switch back to session 1 and check no longer logged in.
     $this->restoreSession($session1);
     $this->drupalGet('node');
-    $this->assertNoText(t('Log out'), t('User is no longer logged in on session 1.'));
+    $this->assertNoText(t('Log out'), 'User is no longer logged in on session 1.');
 
     $this->closeAllSessions();
   }
