@@ -13,13 +13,12 @@
    * @type {Drupal~behavior}
    */
   Drupal.behaviors.autologout = {
-    attach: function(context, settings) {
-      if (context != document) {
+    attach: function (context, settings) {
+      if (context !== document) {
         return;
       }
 
       var paddingTimer;
-      var t;
       var theDialog;
       var localSettings;
 
@@ -42,20 +41,20 @@
         activity = false;
 
         // Bind formUpdated events to preventAutoLogout event.
-        $('body').bind('formUpdated', function(event) {
+        $('body').bind('formUpdated', function (event) {
           $(event.target).trigger('preventAutologout');
         });
 
         // Bind formUpdated events to preventAutoLogout event.
-        $('body').bind('mousemove', function(event) {
+        $('body').bind('mousemove', function (event) {
           $(event.target).trigger('preventAutologout');
         });
 
         // Support for CKEditor.
         if (typeof CKEDITOR !== 'undefined') {
-          CKEDITOR.on('instanceCreated', function(e) {
-            e.editor.on('contentDom', function() {
-              e.editor.document.on('keyup', function(event) {
+          CKEDITOR.on('instanceCreated', function (e) {
+            e.editor.on('contentDom', function () {
+              e.editor.document.on('keyup', function (event) {
                 // Keyup event in ckeditor should prevent autologout.
                 $(e.editor.element.$).trigger('preventAutologout');
               });
@@ -63,7 +62,7 @@
           });
         }
 
-        $('body').bind('preventAutologout', function(event) {
+        $('body').bind('preventAutologout', function (event) {
           // When the preventAutologout event fires, we set activity to true.
           activity = true;
 
@@ -115,13 +114,13 @@
 
       function dialog() {
         var buttons = {};
-        buttons[Drupal.t('Yes')] = function() {
+        buttons[Drupal.t('Yes')] = function () {
           $(this).dialog("destroy");
           clearTimeout(paddingTimer);
           refresh();
         };
 
-        buttons[Drupal.t('No')] = function() {
+        buttons[Drupal.t('No')] = function () {
           $(this).dialog("destroy");
           logout();
         };
@@ -133,7 +132,7 @@
           dialogClass: 'autologout-dialog',
           title: localSettings.title,
           buttons: buttons,
-          close: function(event, ui) {
+          close: function (event, ui) {
             logout();
           }
         });
@@ -144,7 +143,7 @@
       function confirmLogout() {
         $(theDialog).dialog('destroy');
 
-        Drupal.Ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function(time) {
+        Drupal.Ajax['autologout.getTimeLeft'].autologoutGetTimeLeft(function (time) {
           if (time > 0) {
             t = setTimeout(init, time);
           }
@@ -162,18 +161,18 @@
           $.ajax({
             url: drupalSettings.path.baseUrl + "autologout_ahah_logout",
             type: "POST",
-            beforeSend: function(xhr) {
+            beforeSend: function (xhr) {
               xhr.setRequestHeader('X-Requested-With', {
-                toString: function(){
+                toString: function (){
                   return '';
                 }
               });
             },
-            success: function() {
+            success: function () {
               window.location = localSettings.redirect_url;
             },
-            error: function(XMLHttpRequest, textStatus) {
-              if (XMLHttpRequest.status == 403 || XMLHttpRequest.status == 404) {
+            error: function (XMLHttpRequest, textStatus) {
+              if (XMLHttpRequest.status === 403 || XMLHttpRequest.status === 404) {
                 window.location = localSettings.redirect_url;
               }
             }
@@ -191,7 +190,7 @@
        *   The function to run when ajax is successful. The time parameter
        *   is the time remaining for the current user in ms.
        */
-      Drupal.Ajax.prototype.autologoutGetTimeLeft = function(callback) {
+      Drupal.Ajax.prototype.autologoutGetTimeLeft = function (callback) {
         var ajax = this;
 
         if (ajax.ajaxing) {
@@ -201,7 +200,7 @@
           if (typeof response == 'string') {
             response = $.parseJSON(response);
           }
-          if (typeof response[0].command === 'string' && response[0].command == 'alert') {
+          if (typeof response[0].command === 'string' && response[0].command === 'alert') {
             // In the event of an error, we can assume user has been logged out.
             window.location = localSettings.redirect_url;
           }
@@ -225,7 +224,7 @@
         element: $(document.body),
         url: drupalSettings.path.baseUrl + 'autologout_ajax_get_time_left',
         event: 'autologout.getTimeLeft',
-        error: function(XMLHttpRequest, textStatus) {
+        error: function (XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
         }
       });
@@ -239,7 +238,7 @@
        * @param function timerFunction
        *   The function to tell the timer to run after its been restarted.
        */
-      Drupal.Ajax.prototype.autologoutRefresh = function(timerfunction) {
+      Drupal.Ajax.prototype.autologoutRefresh = function (timerfunction) {
         var ajax = this;
 
         if (ajax.ajaxing) {
@@ -247,10 +246,10 @@
         }
 
         ajax.options.success = function (response, status) {
-          if (typeof response == 'string') {
+          if (typeof response === 'string') {
             response = $.parseJSON(response);
           }
-          if (typeof response[0].command === 'string' && response[0].command == 'alert') {
+          if (typeof response[0].command === 'string' && response[0].command === 'alert') {
             // In the event of an error, we can assume the user has been logged out.
             window.location = localSettings.redirect_url;
           }
@@ -275,7 +274,7 @@
         element: $(document.body),
         url: drupalSettings.path.baseUrl + 'autologout_ahah_set_last',
         event: 'autologout.refresh',
-        error: function(XMLHttpRequest, textStatus) {
+        error: function (XMLHttpRequest, textStatus) {
           // Disable error reporting to the screen.
         }
       });
@@ -291,7 +290,7 @@
       // Check if the page was loaded via a back button click.
       var $dirty_bit = $('#autologout-cache-check-bit');
       if ($dirty_bit.length !== 0) {
-        if ($dirty_bit.val() == '1') {
+        if ($dirty_bit.val() === '1') {
           // Page was loaded via back button click, we should refresh the timer.
           refresh();
         }

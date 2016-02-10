@@ -298,7 +298,7 @@ class AutologoutTest extends WebTestBase {
       ->save();
 
     // Check that the user can access the page after login.
-    $var = $this->drupalGet('admin/reports/status');
+    $this->drupalGet('admin/reports/status');
     $this->assertResponse(200, 'Admin page is accessible');
     $this->assertText(t("Here you can find a short overview of your site's parameters as well as any problems detected with your installation."), 'User can access elements of the admin page.');
 

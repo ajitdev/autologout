@@ -98,7 +98,6 @@ class AutologoutWarningBlock extends BlockBase implements ContainerFactoryPlugin
     //    drupal_set_message($this->t("The Javascript timer module's 'Javascript load options' setting should be set to 'Every page' for the dynamic countdown to work in the automated logout block."), 'error');
     //  }
     //}
-
     return $return;
   }
 
@@ -115,7 +114,8 @@ class AutologoutWarningBlock extends BlockBase implements ContainerFactoryPlugin
     }
 
     if ($autologout_manager->refreshOnly()) {
-      $markup = $this->t('Autologout does not apply on the current page, you will be kept logged in whilst this page remains open.');
+      $markup = $this->t('Autologout does not apply on the current page,
+         you will be kept logged in whilst this page remains open.');
     }
     elseif ($this->moduleHandler->moduleExists('jstimer') && $this->moduleHandler->moduleExists('jst_timer')) {
       return \Drupal::formBuilder()->getForm('Drupal\autologout\Form\AutologoutBlockForm');

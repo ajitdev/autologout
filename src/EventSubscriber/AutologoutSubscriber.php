@@ -44,7 +44,7 @@ class AutologoutSubscriber implements EventSubscriberInterface {
 
     $uid = \Drupal::currentUser()->id();
 
-    if (\Drupal::currentUser()->id() == 0) {
+    if ($uid == 0) {
       if (!empty($_GET['autologout_timeout']) && $_GET['autologout_timeout'] == 1 && empty($_POST)) {
         $autologout_manager->inactivityMessage();
       }

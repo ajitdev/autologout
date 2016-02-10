@@ -75,9 +75,9 @@ class AutologoutSessionCleanupOnLoginTest extends WebTestBase {
     $sessions = $this->getSessions($this->privilegedUser);
     $this->assertEqual(2, count($sessions), 'After second login there is now two active session');
 
-    // Switch sessions.
-    $session2 = $this->stashSession();
+    $this->stashSession();
 
+    // Switch sessions.
     // Wait for sessions to expire.
     sleep(6);
 
@@ -174,7 +174,7 @@ class AutologoutSessionCleanupOnLoginTest extends WebTestBase {
    * Close all stashed sessions and the current session.
    */
   public function closeAllSessions() {
-    foreach ($this->curlHandles as $cookie_file => $curl_handle) {
+    foreach ($this->curlHandles as $curl_handle) {
       if (isset($curl_handle)) {
         curl_close($curl_handle);
       }
