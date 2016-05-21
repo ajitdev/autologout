@@ -95,6 +95,14 @@ class AutologoutSettingsForm extends ConfigFormBase {
       '#description' => $this->t('How many seconds to give a user to respond to the logout dialog before ending their session.'),
     );
 
+    $form['no_individual_logout_threshold'] = array(
+      '#type' => 'checkbox',
+      '#title' => $this->t('Disable user-specific logout thresholds'),
+      '#default_value' => $config->get('no_individual_logout_threshold'),
+      '#weight' => -5,
+      '#description' => $this->t('Enable to only allow autologout thresholds to be set globally on this form. You may want to do this if...<br>1.) You don\'t plan on allowing users to set their own logout threshold.<br>2.) You don\'t allow writing to the config directory in your production environment and still want autologout admins to be able to create or edit users.'),
+    );
+
     $form['role_logout'] = array(
       '#type' => 'checkbox',
       '#title' => $this->t('Role Timeout'),
@@ -289,6 +297,7 @@ class AutologoutSettingsForm extends ConfigFormBase {
     $autologout_settings->set('timeout', $values['timeout'])
       ->set('max_timeout', $values['max_timeout'])
       ->set('padding', $values['padding'])
+      ->set('no_individual_logout_threshold', $values['no_individual_logout_threshold'])
       ->set('role_logout', $values['role_logout'])
       ->set('redirect_url', $values['redirect_url'])
       ->set('no_dialog', $values['no_dialog'])

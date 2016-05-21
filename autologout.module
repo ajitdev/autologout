@@ -33,9 +33,10 @@ function autologout_form_user_form_alter(&$form, FormStateInterface $form_state)
   $user_id = $form_state->getFormObject()->getEntity()->id();
   $access = FALSE;
 
-  // If user has access to change, and they are changing their own and only
-  // their own timeout. Or they are an admin.
-  if (($user->hasPermission('change own logout threshold') && $user->id() == $user_id) || $user->hasPermission('administer autologout')) {
+  // If user-specific thresholds are enabled (the default), and user has access
+  // to change and they are changing their own and only
+  // their own timeout, or they are an admin.
+  if (!\Drupal::config('autologout.settings')->get('no_individual_logout_threshold') && (($user->hasPermission('change own logout threshold') && $user->id() == $user_id) || $user->hasPermission('administer autologout'))) {
     $access = TRUE;
   }
 
@@ -83,7 +84,8 @@ function autologout_user_profile_submit(&$form, FormStateInterface $form_state) 
 
   // Access is reused here as a security measure. Not only will the element not
   // display but wont submit without access.
-  if ($access) {
+  // Do not store config if setting to not store config for every user is TRUE.
+  if ($access && !\Drupal::config('autologout.settings')->get('no_individual_logout_threshold')) {
     \Drupal::configFactory()->getEditable('autologout.user.' . $user_id)
       ->set('enabled', $enabled)
       ->set('timeout', $timeout)
